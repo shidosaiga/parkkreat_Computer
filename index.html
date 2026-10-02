@@ -823,15 +823,177 @@
     }
 
     .receipt {
-      margin-top: 24px;
+      width: min(820px, 100%);
+      margin: 30px auto 0;
+      scroll-margin-top: 96px;
+      border: 1px solid #d6e0e8;
+      border-top: 4px solid #16bfff;
+      border-radius: 12px;
+      background: #fff;
+      color: #172536;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22);
+      padding: 34px;
+    }
+
+    .receipt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #dce4eb;
+    }
+
+    .receipt-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .receipt-mark {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      background: #0d2637;
+      color: #60d6ff;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .receipt-shop-name {
+      color: #172536;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .receipt-shop-service {
+      color: #637384;
+      font-size: 12px;
+    }
+
+    .receipt-heading {
+      text-align: right;
+    }
+
+    .receipt-heading .section-label {
+      margin-bottom: 4px;
+      color: #087cff;
+      font-size: 11px;
+    }
+
+    .receipt-heading h3 {
+      margin: 0;
+      color: #172536;
+      font-size: 23px;
     }
 
     .receipt-meta {
       display: grid;
-      gap: 5px;
-      margin-bottom: 16px;
-      color: #cbd4df;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 22px 0;
+    }
+
+    .receipt-meta-item {
+      display: grid;
+      gap: 4px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f2f6f9;
+    }
+
+    .receipt-meta-item span {
+      color: #657587;
+      font-size: 12px;
+    }
+
+    .receipt-meta-item strong {
+      color: #172536;
       font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .receipt-items-header,
+    #receipt .receipt-line {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .receipt-items-header {
+      padding: 10px 12px;
+      border-bottom: 1px solid #cbd6df;
+      color: #657587;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    #receipt .receipt-line {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8ed;
+      color: #26394c;
+      font-size: 14px;
+    }
+
+    #receipt .receipt-line strong {
+      color: #172536;
+      white-space: nowrap;
+    }
+
+    .receipt-details {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(160px, 0.8fr);
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .receipt-detail {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid #e0e7ed;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+
+    .receipt-detail h4 {
+      margin-bottom: 7px;
+      color: #657587;
+      font-size: 12px;
+    }
+
+    .receipt-detail p {
+      color: #26394c;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    #receipt .receipt-total {
+      align-items: center;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-left: 4px solid #16bfff;
+      border-radius: 6px;
+      background: #edf8fd;
+      color: #172536;
+      font-size: 19px;
+    }
+
+    #receipt .receipt-total strong {
+      color: #087cff;
+      font-size: 25px;
+      white-space: nowrap;
+    }
+
+    .receipt-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #fff8e8;
+      color: #725316;
+      font-size: 12px;
     }
 
     .receipt-description {
@@ -856,6 +1018,11 @@
     }
 
     @media print {
+      @page {
+        size: A4;
+        margin: 16mm;
+      }
+
       body * {
         visibility: hidden;
       }
@@ -867,23 +1034,38 @@
 
       #receipt {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 0;
         width: 100%;
+        max-width: none;
         margin: 0;
+        padding: 0;
         border: 0;
         background: #fff;
-        color: #111;
+        box-shadow: none;
+        color: #172536;
       }
 
+      #receipt .receipt-header,
       #receipt .receipt-meta,
+      #receipt .receipt-items-header,
       #receipt .receipt-line,
+      #receipt .receipt-detail,
       #receipt .receipt-total,
       #receipt .receipt-description {
-        color: #111;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      #receipt .receipt-total,
+      #receipt .receipt-note,
+      #receipt .receipt-meta-item,
+      #receipt .receipt-detail {
+        background: #fff !important;
       }
 
       #receipt .receipt-total strong {
-        color: #111;
+        color: #172536;
       }
 
       .receipt-actions {
@@ -1078,7 +1260,17 @@
     @media (max-width: 800px) {
 
       .nav-links {
+        display: flex;
+        gap: 0;
+      }
+
+      .nav-links li:not(.nav-queue-item) {
         display: none;
+      }
+
+      .nav-links .nav-queue-item a {
+        padding: 9px 12px;
+        font-size: 13px;
       }
 
       .hero {
@@ -1132,6 +1324,28 @@
       .form-grid,
       .task-list {
         grid-template-columns: 1fr;
+      }
+
+      .receipt {
+        padding: 22px;
+      }
+
+      .receipt-header {
+        flex-direction: column;
+      }
+
+      .receipt-heading {
+        text-align: left;
+      }
+
+      .receipt-meta,
+      .receipt-details {
+        grid-template-columns: 1fr;
+      }
+
+      #receipt .receipt-total {
+        align-items: flex-start;
+        flex-direction: column;
       }
 
       .program-entry {
@@ -1209,6 +1423,12 @@
         <li>
           <a href="#process">
             ขั้นตอน
+          </a>
+        </li>
+
+        <li class="nav-queue-item">
+          <a href="#request" class="nav-button">
+            คิวบริการ
           </a>
         </li>
 
@@ -1614,18 +1834,39 @@
       </div>
 
       <article class="receipt" id="receipt" aria-live="polite" hidden>
-        <h3>ใบสรุปประเมินงาน</h3>
+        <header class="receipt-header">
+          <div class="receipt-brand">
+            <div class="receipt-mark" aria-hidden="true">PK</div>
+            <div>
+              <p class="receipt-shop-name">ห้าแยกปากเกร็ด</p>
+              <p class="receipt-shop-service">Computer &amp; IT Services · 095-604-3539</p>
+            </div>
+          </div>
+          <div class="receipt-heading">
+            <div class="section-label">SERVICE ESTIMATE</div>
+            <h3>ใบสรุปประเมินงาน</h3>
+          </div>
+        </header>
         <div class="receipt-meta">
-          <span id="receipt-number"></span>
-          <span id="receipt-date"></span>
-          <span id="receipt-customer"></span>
-          <span id="receipt-device"></span>
+          <div class="receipt-meta-item"><span>เลขอ้างอิง</span><strong id="receipt-number"></strong></div>
+          <div class="receipt-meta-item"><span>วันที่ประเมิน</span><strong id="receipt-date"></strong></div>
+          <div class="receipt-meta-item"><span>ผู้ติดต่อ</span><strong id="receipt-customer"></strong></div>
+          <div class="receipt-meta-item"><span>อุปกรณ์ / รุ่น</span><strong id="receipt-device"></strong></div>
         </div>
+        <div class="receipt-items-header"><span>รายการบริการ</span><span>ราคา</span></div>
         <div id="receipt-items"></div>
-        <div class="receipt-line"><span>อาการ / รายละเอียด</span><span class="receipt-description" id="receipt-symptoms"></span></div>
-        <div class="receipt-line"><span>ภาพประกอบ</span><span id="receipt-photos"></span></div>
+        <div class="receipt-details">
+          <section class="receipt-detail">
+            <h4>อาการ / รายละเอียดงาน</h4>
+            <p class="receipt-description" id="receipt-symptoms"></p>
+          </section>
+          <section class="receipt-detail">
+            <h4>ภาพประกอบ</h4>
+            <p id="receipt-photos"></p>
+          </section>
+        </div>
         <div class="receipt-total"><span>ยอดประเมินเบื้องต้น</span><strong id="receipt-total"></strong></div>
-        <p class="estimate-disclaimer">เอกสารนี้เป็นใบประเมินเบื้องต้น ไม่ใช่ใบเสร็จรับเงิน ราคาสุดท้ายและคิวงานต้องยืนยันกับร้านก่อนเริ่มบริการ</p>
+        <p class="receipt-note">เอกสารนี้เป็นใบประเมินเบื้องต้น ไม่ใช่ใบเสร็จรับเงิน ราคาสุดท้ายและคิวงานต้องยืนยันกับร้านก่อนเริ่มบริการ</p>
         <div class="receipt-actions">
           <button class="btn btn-primary" id="print-receipt" type="button">พิมพ์ / บันทึก PDF</button>
           <a class="btn btn-secondary" href="tel:0956043539">โทรยืนยันกับร้าน</a>
@@ -2246,10 +2487,10 @@
           });
         }
 
-        document.getElementById("receipt-number").textContent = `เลขอ้างอิงประเมิน: ${ticket}`;
-        document.getElementById("receipt-date").textContent = `วันที่: ${new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(now)}`;
-        document.getElementById("receipt-customer").textContent = `ผู้ติดต่อ: ${document.getElementById("customer-name").value.trim()}${document.getElementById("customer-phone").value.trim() ? ` · ${document.getElementById("customer-phone").value.trim()}` : ""}`;
-        document.getElementById("receipt-device").textContent = `อุปกรณ์: ${document.getElementById("device").value.trim() || "ไม่ได้ระบุ"}`;
+        document.getElementById("receipt-number").textContent = ticket;
+        document.getElementById("receipt-date").textContent = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(now);
+        document.getElementById("receipt-customer").textContent = `${document.getElementById("customer-name").value.trim()}${document.getElementById("customer-phone").value.trim() ? ` · ${document.getElementById("customer-phone").value.trim()}` : ""}`;
+        document.getElementById("receipt-device").textContent = document.getElementById("device").value.trim() || "ไม่ได้ระบุ";
         document.getElementById("receipt-symptoms").textContent = document.getElementById("symptoms").value.trim();
         document.getElementById("receipt-photos").textContent = files.length ? `แนบ ${files.length} ภาพ (ต้องส่งภาพให้ร้านแยก)` : "ไม่ได้แนบภาพ";
         document.getElementById("receipt-total").textContent = formatBaht(total);
