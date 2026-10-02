@@ -700,6 +700,52 @@
       flex: 0 0 auto;
     }
 
+    .program-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .program-entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .program-entry select,
+    .program-entry input {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: #0a111b;
+      color: #f5f7fa;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .program-entry .program-other {
+      grid-column: 1;
+    }
+
+    .program-remove {
+      min-height: 46px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #d6dee8;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .program-add {
+      justify-self: start;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
     .field-hint,
     .form-note,
     .photo-error {
@@ -1086,6 +1132,10 @@
       .form-grid,
       .task-list {
         grid-template-columns: 1fr;
+      }
+
+      .program-entry {
+        grid-template-columns: minmax(0, 1fr) auto;
       }
 
       .contact-content {
@@ -1492,11 +1542,6 @@
               </label>
 
               <label class="task-option">
-                <input type="checkbox" name="tasks" value="software">
-                <span>ติดตั้ง / ตั้งค่าโปรแกรม</span>
-              </label>
-
-              <label class="task-option">
                 <input type="checkbox" name="tasks" value="repair">
                 <span>ตรวจเช็ก / แก้ปัญหาเพิ่มเติม</span>
               </label>
@@ -1529,6 +1574,13 @@
             <div class="field field-full" id="other-task-field" hidden>
               <label for="other-task">ระบุงานอื่น ๆ</label>
               <input id="other-task" name="otherTask" maxlength="120" placeholder="ระบุงานที่ต้องการ">
+            </div>
+
+            <div class="field field-full">
+              <label>ติดตั้งโปรแกรม (โปรแกรมละ 100 บาท)</label>
+              <div class="program-list" id="program-list"></div>
+              <button class="btn btn-secondary program-add" id="add-program" type="button">+ เพิ่มโปรแกรม</button>
+              <span class="field-hint">เลือก Microsoft Office, Steam หรือโปรแกรมอื่น ๆ ได้ เพิ่มหลายรายการได้</span>
             </div>
 
             <div class="field field-full">
@@ -1981,17 +2033,38 @@
       const photoInput = document.getElementById("photos");
       const photoError = document.getElementById("photo-error");
       const photoPreview = document.getElementById("photo-preview");
+      const programList = document.getElementById("program-list");
       const receipt = document.getElementById("receipt");
       const taskNames = {
         windows: "ติดตั้ง Windows",
         linux: "ติดตั้ง Linux",
         cleaning: "ทำความสะอาดเครื่อง",
-        software: "ติดตั้ง / ตั้งค่าโปรแกรม",
         repair: "ตรวจเช็ก / แก้ปัญหาเพิ่มเติม",
         other: "งานอื่น ๆ"
       };
+      const programOptions = [
+        "Microsoft Office",
+        "Steam",
+        "Adobe Acrobat Reader",
+        "Google Chrome",
+        "Zoom",
+        "LINE",
+        "VLC Media Player",
+        "Discord",
+        "AnyDesk",
+        "โปรแกรมอื่น ๆ"
+      ];
 
       const selectedTasks = () => taskInputs.filter((input) => input.checked);
+      const selectedPrograms = () => [...programList.querySelectorAll(".program-entry")]
+        .map((row) => {
+          const select = row.querySelector("select");
+          const name = select.value === "other"
+            ? row.querySelector(".program-other").value.trim()
+            : select.value;
+          return name ? { name, row } : null;
+        })
+        .filter(Boolean);
 
       const taskDescription = (input) => {
         if (input.value === "windows") {
@@ -2014,16 +2087,25 @@
         document.getElementById("windows-options").hidden = !values.has("windows");
         document.getElementById("linux-options").hidden = !values.has("linux");
         document.getElementById("other-task-field").hidden = !values.has("other");
+
+        programList.querySelectorAll(".program-entry").forEach((row) => {
+          const select = row.querySelector("select");
+          const customName = row.querySelector(".program-other");
+          customName.hidden = select.value !== "other";
+          customName.required = select.value === "other";
+        });
       };
 
       const updateEstimate = () => {
         updateOptions();
         const tasks = selectedTasks();
-        const total = Math.max(1, tasks.length) * 200;
+        const programs = selectedPrograms();
+        const baseTotal = tasks.length ? tasks.length * 200 : 0;
+        const total = baseTotal + programs.length * 100 || 200;
         const taskList = document.getElementById("estimate-tasks");
         taskList.replaceChildren();
 
-        if (tasks.length === 0) {
+        if (tasks.length === 0 && programs.length === 0) {
           const row = document.createElement("div");
           row.className = "estimate-line";
           row.innerHTML = "<span>ค่าบริการเริ่มต้น</span><strong>200 บาท</strong>";
@@ -2041,10 +2123,62 @@
           taskList.append(row);
         });
 
+        programs.forEach(({ name }) => {
+          const row = document.createElement("div");
+          row.className = "estimate-line";
+          const label = document.createElement("span");
+          label.textContent = `ติดตั้ง ${name}`;
+          const price = document.createElement("strong");
+          price.textContent = formatBaht(100);
+          row.append(label, price);
+          taskList.append(row);
+        });
+
         document.getElementById("estimate-total").textContent = formatBaht(total);
       };
 
+      const addProgramRow = () => {
+        const row = document.createElement("div");
+        row.className = "program-entry";
+
+        const select = document.createElement("select");
+        select.setAttribute("aria-label", "เลือกโปรแกรมที่ต้องการติดตั้ง");
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "เลือกโปรแกรม...";
+        select.append(placeholder);
+        programOptions.forEach((name) => {
+          const option = document.createElement("option");
+          option.value = name === "โปรแกรมอื่น ๆ" ? "other" : name;
+          option.textContent = name;
+          select.append(option);
+        });
+
+        const customName = document.createElement("input");
+        customName.className = "program-other";
+        customName.type = "text";
+        customName.maxLength = 120;
+        customName.placeholder = "ระบุชื่อโปรแกรม";
+        customName.setAttribute("aria-label", "ระบุชื่อโปรแกรมอื่น");
+        customName.hidden = true;
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "program-remove";
+        removeButton.type = "button";
+        removeButton.textContent = "ลบ";
+        removeButton.setAttribute("aria-label", "ลบรายการโปรแกรม");
+        removeButton.addEventListener("click", () => {
+          row.remove();
+          updateEstimate();
+        });
+
+        row.append(select, removeButton, customName);
+        programList.append(row);
+        updateEstimate();
+      };
+
       taskInputs.forEach((input) => input.addEventListener("change", updateEstimate));
+      document.getElementById("add-program").addEventListener("click", addProgramRow);
       form.addEventListener("input", updateEstimate);
       form.addEventListener("change", updateEstimate);
 
@@ -2082,7 +2216,9 @@
         }
 
         const tasks = selectedTasks();
-        const total = Math.max(1, tasks.length) * 200;
+        const programs = selectedPrograms();
+        const baseTotal = tasks.length ? tasks.length * 200 : 0;
+        const total = baseTotal + programs.length * 100 || 200;
         const ticket = `PK-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`;
         const now = new Date();
         const rows = document.getElementById("receipt-items");
@@ -2099,10 +2235,11 @@
           rows.append(row);
         };
 
-        if (tasks.length === 0) {
+        if (tasks.length === 0 && programs.length === 0) {
           addReceiptRow("ค่าบริการเริ่มต้น", 200);
         } else {
           tasks.forEach((task) => addReceiptRow(taskDescription(task), 200));
+          programs.forEach(({ name }) => addReceiptRow(`ติดตั้ง ${name}`, 100));
         }
 
         document.getElementById("receipt-number").textContent = `เลขอ้างอิงประเมิน: ${ticket}`;
