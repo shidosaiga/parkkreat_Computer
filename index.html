@@ -2166,7 +2166,25 @@
           </label>
           <button class="btn btn-primary" type="submit">เข้าสู่ระบบ</button>
         </form>
+        <button class="btn btn-secondary" id="staff-password-reset" type="button">ตั้งหรือรีเซ็ตรหัสผ่าน</button>
         <p class="staff-message" id="staff-login-message" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="staff-panel" id="staff-password-panel" hidden>
+        <h3>ตั้งรหัสผ่านบัญชีช่าง</h3>
+        <p class="field-hint">ตั้งรหัสผ่านใหม่อย่างน้อย 12 ตัวอักษร แล้วเข้าสู่ขั้นตอนตั้ง Authenticator</p>
+        <form class="staff-login-form" id="staff-password-form">
+          <label class="field">
+            <span>รหัสผ่านใหม่</span>
+            <input id="staff-new-password" type="password" autocomplete="new-password" minlength="12" required>
+          </label>
+          <label class="field">
+            <span>ยืนยันรหัสผ่านใหม่</span>
+            <input id="staff-confirm-password" type="password" autocomplete="new-password" minlength="12" required>
+          </label>
+          <button class="btn btn-primary" id="staff-password-submit" type="submit">บันทึกรหัสผ่าน</button>
+        </form>
+        <p class="staff-message" id="staff-password-message" role="status" aria-live="polite"></p>
       </div>
 
       <div class="staff-panel" id="staff-mfa-panel" hidden>
@@ -2906,14 +2924,28 @@
       const adminClient = hasSupabaseConfig && window.supabase
         ? window.supabase.createClient(config.url, config.anonKey)
         : null;
+      const incomingAuthType = new URLSearchParams(location.hash.slice(1)).get("type")
+        || new URLSearchParams(location.search).get("type");
+      const incomingAuthFlow = new URLSearchParams(location.search).get("flow");
       const loginPanel = document.getElementById("staff-login-panel");
+      const passwordPanel = document.getElementById("staff-password-panel");
       const mfaPanel = document.getElementById("staff-mfa-panel");
       const mfaEnrollPanel = document.getElementById("staff-mfa-enroll");
       const mfaMessage = document.getElementById("staff-mfa-message");
       const dashboard = document.getElementById("staff-dashboard");
       const loginMessage = document.getElementById("staff-login-message");
+      const passwordMessage = document.getElementById("staff-password-message");
       const staffMessage = document.getElementById("staff-message");
       let pendingMfaFactorId = "";
+
+      const showPasswordSetup = () => {
+        loginPanel.hidden = true;
+        passwordPanel.hidden = false;
+        mfaPanel.hidden = true;
+        dashboard.hidden = true;
+        history.replaceState(null, "", `${location.pathname}#staff`);
+        document.getElementById("staff-new-password").focus();
+      };
 
       const renderStaffQueue = async () => {
         const list = document.getElementById("staff-list");
@@ -3124,6 +3156,52 @@
         await beginStaffMfa(data.session);
       });
 
+      document.getElementById("staff-password-reset").addEventListener("click", async () => {
+        if (!adminClient) {
+          loginMessage.textContent = "ระบบช่างยังไม่ได้เชื่อม Supabase";
+          return;
+        }
+        const email = document.getElementById("staff-email").value.trim();
+        if (!email) {
+          loginMessage.textContent = "กรอกอีเมลช่างก่อนขอลิงก์ตั้งรหัสผ่าน";
+          return;
+        }
+        loginMessage.textContent = "กำลังส่งลิงก์ตั้งรหัสผ่าน...";
+        const redirectTo = `${location.origin}${location.pathname}?flow=password#staff`;
+        const { error } = await adminClient.auth.resetPasswordForEmail(email, { redirectTo });
+        loginMessage.textContent = error
+          ? "ส่งลิงก์ไม่สำเร็จ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ"
+          : "หากอีเมลนี้มีบัญชี ระบบจะส่งลิงก์ตั้งรหัสผ่านให้ โปรดตรวจกล่องจดหมายและ Spam";
+      });
+
+      document.getElementById("staff-password-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!adminClient) return;
+        const password = document.getElementById("staff-new-password").value;
+        const confirmation = document.getElementById("staff-confirm-password").value;
+        if (password !== confirmation) {
+          passwordMessage.textContent = "รหัสผ่านทั้งสองช่องไม่ตรงกัน";
+          return;
+        }
+        const submitButton = document.getElementById("staff-password-submit");
+        submitButton.disabled = true;
+        passwordMessage.textContent = "กำลังบันทึกรหัสผ่าน...";
+        const { error } = await adminClient.auth.updateUser({ password });
+        submitButton.disabled = false;
+        if (error) {
+          passwordMessage.textContent = "บันทึกรหัสผ่านไม่สำเร็จ กรุณาลองใหม่";
+          return;
+        }
+        document.getElementById("staff-password-form").reset();
+        passwordPanel.hidden = true;
+        const { data } = await adminClient.auth.getSession();
+        if (data.session) await beginStaffMfa(data.session);
+        else {
+          loginPanel.hidden = false;
+          loginMessage.textContent = "ตั้งรหัสผ่านแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่";
+        }
+      });
+
       document.getElementById("staff-logout").addEventListener("click", async () => {
         if (adminClient) await adminClient.auth.signOut();
         pendingMfaFactorId = "";
@@ -3134,8 +3212,13 @@
       });
 
       if (adminClient) {
+        adminClient.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY" && session) showPasswordSetup();
+        });
         adminClient.auth.getSession().then(({ data }) => {
-          if (data.session && location.hash === "#staff") activateStaffSession(data.session);
+          if (!data.session) return;
+          if (incomingAuthType === "invite" || incomingAuthType === "recovery" || incomingAuthFlow === "password") showPasswordSetup();
+          else if (location.hash === "#staff") activateStaffSession(data.session);
         });
       } else {
         loginMessage.textContent = "ระบบช่างยังไม่ได้เชื่อม Supabase";
