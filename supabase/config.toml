@@ -3,3 +3,33 @@ verify_jwt = false
 
 [functions.lookup-queue]
 verify_jwt = false
+
+[auth]
+enable_signup = false
+additional_redirect_urls = ["https://shidosaiga.github.io/parkkreat_Computer/**"]
+site_url = "https://shidosaiga.github.io/parkkreat_Computer/"
+
+[auth.email]
+enable_signup = false
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+
+[db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[storage.analytics]
+enabled = true
+max_namespaces = 10
+
+[storage.image_transformation]
+enabled = true

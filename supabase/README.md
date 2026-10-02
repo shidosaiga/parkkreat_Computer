@@ -4,35 +4,34 @@ This project is a static GitHub Pages site backed by Supabase. Never put the Sup
 
 ## Configure Supabase
 
-1. Create a Supabase project and copy the Project URL and publishable/anon key.
-2. Replace the placeholders in `assets/supabase-config.js` with the Project URL and publishable/anon key. These are public browser credentials; database RLS is the security boundary.
-3. Run `migrations/202610020001_service_queue.sql` in the Supabase SQL Editor.
-4. In Supabase Auth, disable public sign-ups. Invite the technician account by email and set a strong password. Enable App Authenticator (TOTP) MFA and disable Phone MFA for the project.
-5. Add only the technician's Auth user ID to the admin allowlist, from the SQL Editor:
+1. The existing project's Project URL and publishable key are configured in `assets/supabase-config.js`. If the key is rotated, copy the replacement from Project Settings > API Keys and update that file. Do not use the database password or the `service_role`/secret key here. The publishable key is intended for browser use; database RLS is the security boundary.
+2. Migration `migrations/202610020001_service_queue.sql` is applied to the existing project. Run it when setting up a fresh project.
+3. Auth is configured to disable public sign-ups, require confirmed email, allow TOTP MFA, and disable Phone MFA. The technician invitation has been sent to the configured technician email.
+4. The technician's Auth user ID is already in the `queue_admins` allowlist. Keep this allowlist restricted to the technician account.
 
    ```sql
    insert into public.queue_admins (user_id)
    select id from auth.users where email = 'technician@example.com';
    ```
 
-6. Install the Supabase CLI, log in, link the project, then deploy both Edge Functions:
+5. The Supabase CLI is a project dev dependency. On Windows PowerShell, log in, link the project, then deploy both Edge Functions:
 
    ```powershell
-   supabase login
-   supabase link --project-ref YOUR_PROJECT_REF
-   supabase functions deploy submit-queue
-   supabase functions deploy lookup-queue
+   npx.cmd supabase login
+   npx.cmd supabase link --project-ref solquuycchhumpyrsppr
+   npx.cmd supabase functions deploy submit-queue
+   npx.cmd supabase functions deploy lookup-queue
    ```
 
    The functions allow the GitHub Pages origin by default. If the site uses a custom domain, set its exact HTTPS origin before deploying:
 
    ```powershell
-   supabase secrets set SITE_ORIGIN=https://your-domain.example
+   npx.cmd supabase secrets set SITE_ORIGIN=https://your-domain.example
    ```
 
-7. Open `https://shidosaiga.github.io/parkkreat_Computer/#staff`, sign in with the invited technician email/password, scan the displayed QR code using Google Authenticator, Microsoft Authenticator, or another TOTP app, then enter the current six-digit code. This enrolls and verifies the authenticator. Later sign-ins require a fresh six-digit code.
-8. Set the GitHub Pages site URL under Supabase Auth > URL Configuration as the Site URL and an allowed redirect URL. Password login does not need email redirects, but this avoids Auth URL warnings.
-9. Push the changed site to GitHub. The Pages workflow deploys it automatically.
+6. Accept the technician invitation, set a strong password, then open `https://shidosaiga.github.io/parkkreat_Computer/#staff`. Sign in, scan the displayed QR code using an authenticator app, and enter the six-digit code. This enrolls and verifies TOTP for the technician account.
+7. Supabase Auth Site URL and the GitHub Pages redirect URL are configured for `https://shidosaiga.github.io/parkkreat_Computer/`.
+8. Push the changed site to GitHub. The Pages workflow deploys it automatically.
 
 The Edge Functions use the Supabase project URL and service-role secret from the function runtime. Do not manually copy that secret into `index.html`, `assets/supabase-config.js`, GitHub Pages files, or Git history.
 
