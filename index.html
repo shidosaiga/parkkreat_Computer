@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <meta name="description"
+        content="ร้านรับเช็ค-ซ่อมคอมโน้ตบุค ห้าแยกปากเกร็ด รับตรวจเช็ก ซ่อม ลง Windows Linux ลงโปรแกรม และเขียนโปรแกรม">
+
+  <meta name="keywords"
+        content="ซ่อมคอม, ซ่อมโน้ตบุค, ห้าแยกปากเกร็ด, ลง Windows, Linux, เขียนโปรแกรม">
+
+  <title>
+    รับเช็ค-ซ่อมคอมโน้ตบุค | ห้าแยกปากเกร็ด
+  </title>
+
+  <style>
+
+    /* =========================
+       RESET
+    ========================= */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family:
+        "Noto Sans Thai",
+        "Segoe UI",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+      background:
+        radial-gradient(
+          circle at 80% 10%,
+          rgba(0, 153, 255, 0.12),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 10% 50%,
+          rgba(0, 100, 255, 0.08),
+          transparent 30%
+        ),
+        #070b12;
+
+      color: #f5f7fa;
+
+      line-height: 1.7;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .container {
+      width: min(1120px, 92%);
+      margin: auto;
+    }
+
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    nav {
+      position: fixed;
+
+      top: 0;
+      left: 0;
+
+      width: 100%;
+
+      z-index: 1000;
+
+      background:
+        rgba(7, 11, 18, 0.78);
+
+      backdrop-filter: blur(18px);
+
+      border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-inner {
+      height: 72px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 21px;
+
+      font-weight: 800;
+
+      letter-spacing: -0.5px;
+    }
+
+    .logo span {
+      color: #16bfff;
+    }
+
+    .nav-links {
+      display: flex;
+
+      gap: 28px;
+
+      align-items: center;
+
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: #c8d0da;
+
+      font-size: 14px;
+
+      transition: 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: #16bfff;
+    }
+
+    .nav-button {
+      padding:
+        10px 18px;
+
+      border-radius: 999px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #16bfff,
+          #087cff
+        );
+
+      color: white !important;
+
+      font-weight: 700;
+    }
+
+
+    /* =========================
+       HERO
+    ========================= */
+
+    .hero {
+      min-height: 760px;
+
+      padding-top: 170px;
+
+      display: flex;
+
+      align-items: center;
+
+      position: relative;
+
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+
+      position: absolute;
+
+      width: 500px;
+      height: 500px;
+
+      background:
+        rgba(0, 153, 255, 0.12);
+
+      filter: blur(100px);
+
+      border-radius: 50%;
+
+      right: -150px;
+
+      top: 100px;
+    }
+
+    .hero-content {
+      max-width: 780px;
+
+      position: relative;
+
+      z-index: 2;
+    }
+
+    .badge {
+      display: inline-flex;
+
+      padding:
+        7px 14px;
+
+      border:
+        1px solid
+        rgba(22, 191, 255, 0.35);
+
+      border-radius: 999px;
+
+      background:
+        rgba(22, 191, 255, 0.08);
+
+      color: #63d6ff;
+
+      font-size: 14px;
+
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size:
+        clamp(44px, 7vw, 82px);
+
+      line-height: 1.05;
+
+      letter-spacing: -3px;
+
+      margin-bottom: 25px;
+    }
+
+    h1 span {
+      background:
+        linear-gradient(
+          90deg,
+          #ffffff,
+          #22c7ff
+        );
+
+      -webkit-background-clip: text;
+
+      background-clip: text;
+
+      color: transparent;
+    }
+
+    .hero p {
+      color: #9da8b7;
+
+      font-size: 19px;
+
+      max-width: 680px;
+
+      margin-bottom: 34px;
+    }
+
+    .hero-buttons {
+      display: flex;
+
+      gap: 14px;
+
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      padding:
+        13px 22px;
+
+      border-radius: 12px;
+
+      font-weight: 700;
+
+      transition: 0.2s;
+    }
+
+    .btn-primary {
+      background:
+        linear-gradient(
+          135deg,
+          #16bfff,
+          #087cff
+        );
+
+      box-shadow:
+        0 10px 35px
+        rgba(0, 140, 255, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform:
+        translateY(-2px);
+    }
+
+    .btn-secondary {
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      background:
+        rgba(255, 255, 255, 0.04);
+    }
+
+    .btn-secondary:hover {
+      background:
+        rgba(255, 255, 255, 0.08);
+    }
+
+
+    /* =========================
+       SECTIONS
+    ========================= */
+
+    section {
+      padding: 100px 0;
+    }
+
+    .section-head {
+      margin-bottom: 45px;
+    }
+
+    .section-label {
+      color: #16bfff;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      letter-spacing: 1px;
+
+      margin-bottom: 8px;
+    }
+
+    .section-head h2 {
+      font-size:
+        clamp(30px, 5vw, 46px);
+
+      line-height: 1.15;
+
+      margin-bottom: 12px;
+    }
+
+    .section-head p {
+      color: #9da8b7;
+
+      max-width: 680px;
+    }
+
+
+    /* =========================
+       SERVICES
+    ========================= */
+
+    .services-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 18px;
+    }
+
+    .service-card {
+      padding: 30px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.015)
+        );
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      border-radius: 20px;
+
+      transition: 0.25s;
+    }
+
+    .service-card:hover {
+      transform:
+        translateY(-5px);
+
+      border-color:
+        rgba(22, 191, 255, 0.4);
+
+      box-shadow:
+        0 20px 60px
+        rgba(0, 0, 0, 0.25);
+    }
+
+    .service-icon {
+      width: 52px;
+      height: 52px;
+
+      border-radius: 15px;
+
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      background:
+        rgba(22, 191, 255, 0.1);
+
+      border:
+        1px solid
+        rgba(22, 191, 255, 0.2);
+
+      font-size: 25px;
+
+      margin-bottom: 20px;
+    }
+
+    .service-card h3 {
+      font-size: 22px;
+
+      margin-bottom: 10px;
+    }
+
+    .service-card p {
+      color: #9da8b7;
+
+      margin-bottom: 15px;
+    }
+
+    .service-card ul {
+      list-style: none;
+
+      color: #cbd4df;
+    }
+
+    .service-card li {
+      margin: 5px 0;
+    }
+
+    .service-card li::before {
+      content: "✓";
+
+      color: #16bfff;
+
+      font-weight: bold;
+
+      margin-right: 8px;
+    }
+
+
+    /* =========================
+       TARGET
+    ========================= */
+
+    .target {
+      background:
+        rgba(255, 255, 255, 0.018);
+
+      border-top:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      border-bottom:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+    }
+
+    .target-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 15px;
+    }
+
+    .target-card {
+      padding: 25px;
+
+      border-radius: 18px;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      background: #101925;
+    }
+
+    .target-card strong {
+      display: block;
+
+      margin-bottom: 5px;
+    }
+
+    .target-card span {
+      color: #9da8b7;
+
+      font-size: 14px;
+    }
+
+
+    /* =========================
+       PROCESS
+    ========================= */
+
+    .process {
+      display: grid;
+
+      grid-template-columns:
+        repeat(4, 1fr);
+
+      gap: 15px;
+    }
+
+    .step {
+      padding: 25px;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      border-radius: 18px;
+
+      background: #101925;
+    }
+
+    .number {
+      color: #16bfff;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+      margin-bottom: 10px;
+    }
+
+    .step h3 {
+      margin-bottom: 7px;
+    }
+
+    .step p {
+      color: #9da8b7;
+
+      font-size: 14px;
+    }
+
+
+    /* =========================
+       LOCATION
+    ========================= */
+
+    .location-box {
+      padding: 35px;
+
+      border:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      border-radius: 20px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(255,255,255,.04),
+          rgba(255,255,255,.015)
+        );
+    }
+
+    .location-box h3 {
+      font-size: 25px;
+
+      margin-bottom: 10px;
+    }
+
+    .location-box p {
+      color: #9da8b7;
+    }
+
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .contact-box {
+      border:
+        1px solid
+        rgba(22, 191, 255, 0.25);
+
+      border-radius: 28px;
+
+      padding: 50px;
+
+      background:
+        radial-gradient(
+          circle at 100% 0%,
+          rgba(0, 150, 255, 0.13),
+          transparent 40%
+        ),
+        #101925;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 45px;
+
+      align-items: center;
+    }
+
+    .contact-content {
+      display: grid;
+
+      grid-template-columns: 180px minmax(220px, 1fr) minmax(320px, 1.2fr);
+
+      align-items: center;
+
+      gap: 32px 45px;
+
+      width: 100%;
+    }
+
+    /* QR */
+
+    .qr-box {
+      text-align: center;
+
+      flex-shrink: 0;
+    }
+
+    .qr-box img {
+      width: 180px;
+      height: 180px;
+
+      object-fit: contain;
+
+      background: white;
+
+      padding: 10px;
+
+      border-radius: 18px;
+
+      display: block;
+
+      box-shadow:
+        0 10px 35px
+        rgba(0, 170, 255, 0.18);
+    }
+
+    .qr-label {
+      margin-top: 10px;
+
+      color: #5ee88a;
+
+      font-weight: 700;
+
+      font-size: 14px;
+    }
+
+    .contact-info {
+      flex: 1;
+    }
+
+    .contact-info h2 {
+      font-size: 38px;
+
+      margin-bottom: 10px;
+    }
+
+    .contact-info p {
+      color: #9da8b7;
+
+      max-width: 600px;
+    }
+
+    .phone {
+      display: inline-block;
+
+      font-size: 30px;
+
+      font-weight: 800;
+
+      color: #16bfff;
+
+      margin-top: 15px;
+    }
+
+    .open {
+      color: #5ee88a;
+
+      font-weight: 700;
+
+      margin-top: 5px;
+    }
+
+    .contact-actions {
+      margin-top: 10px;
+    }
+
+    .contact-map {
+      min-width: 0;
+    }
+
+    .contact-map iframe {
+      display: block;
+
+      width: 100%;
+      height: 320px;
+
+      border: 0;
+
+      border-radius: 14px;
+    }
+
+
+    /* =========================
+       FOOTER
+    ========================= */
+
+    footer {
+      border-top:
+        1px solid
+        rgba(255, 255, 255, 0.09);
+
+      padding: 30px 0;
+
+      color: #9da8b7;
+
+      font-size: 14px;
+    }
+
+    .footer-inner {
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 20px;
+    }
+
+    @media (max-width: 1000px) {
+
+      .contact-content {
+        grid-template-columns: 160px minmax(0, 1fr);
+      }
+
+      .contact-map {
+        grid-column: 2;
+      }
+
+      .contact-map iframe {
+        height: 280px;
+      }
+    }
+
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 800px) {
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        min-height: 650px;
+
+        padding-top: 130px;
+      }
+
+      h1 {
+        letter-spacing: -2px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      section {
+        padding: 70px 0;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .target-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .process {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-box {
+        padding: 30px;
+      }
+
+      .contact-content {
+        grid-template-columns: 1fr;
+
+        gap: 30px;
+      }
+
+      .contact-map {
+        grid-column: auto;
+
+        width: 100%;
+      }
+
+      .contact-map iframe {
+        height: 200px;
+      }
+
+      .qr-box img {
+        width: 160px;
+        height: 160px;
+      }
+
+      .contact-info h2 {
+        font-size: 30px;
+      }
+
+      .phone {
+        font-size: 24px;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+      }
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =========================
+       NAVBAR
+  ========================= -->
+
+  <nav>
+
+    <div class="container nav-inner">
+
+      <a href="#" class="logo">
+        ห้าแยก<span>ปากเกร็ด</span>
+      </a>
+
+      <ul class="nav-links">
+
+        <li>
+          <a href="#services">
+            บริการ
+          </a>
+        </li>
+
+        <li>
+          <a href="#target">
+            เหมาะสำหรับ
+          </a>
+        </li>
+
+        <li>
+          <a href="#process">
+            ขั้นตอน
+          </a>
+        </li>
+
+        <li>
+          <a href="#contact"
+             class="nav-button">
+            ติดต่อเรา
+          </a>
+        </li>
+
+      </ul>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- =========================
+       HERO
+  ========================= -->
+
+  <header class="hero">
+
+    <div class="container">
+
+      <div class="hero-content">
+
+        <div class="badge">
+          🛠️ Computer & IT Services
+        </div>
+
+        <h1>
+          รับเช็ค-ซ่อม<br>
+          <span>คอมโน้ตบุค</span>
+        </h1>
+
+        <p>
+          รับบริการตรวจเช็ก แก้ไข และให้คำปรึกษา
+          ด้านคอมพิวเตอร์ สำหรับ PC และ Notebook
+          ทั้ง Hardware และ Software
+          พร้อมบริการลง Windows, Linux
+          และเขียนโปรแกรม
+        </p>
+
+        <div class="hero-buttons">
+
+          <a
+            href="tel:0956043539"
+            class="btn btn-primary"
+          >
+            📞 โทร 095-604-3539
+          </a>
+
+          <a
+            href="#services"
+            class="btn btn-secondary"
+          >
+            ดูบริการทั้งหมด →
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </header>
+
+
+
+  <!-- =========================
+       SERVICES
+  ========================= -->
+
+  <section id="services">
+
+    <div class="container">
+
+      <div class="section-head">
+
+        <div class="section-label">
+          OUR SERVICES
+        </div>
+
+        <h2>
+          บริการของเรา
+        </h2>
+
+        <p>
+          ช่วยตรวจสอบ แก้ไข และตั้งค่าคอมพิวเตอร์
+          ให้พร้อมสำหรับการเรียน การทำงาน
+          และการใช้งานทั่วไป
+        </p>
+
+      </div>
+
+
+      <div class="services-grid">
+
+
+        <!-- 1 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            🔧
+          </div>
+
+          <h3>
+            เช็กและแก้ปัญหาคอมพิวเตอร์
+          </h3>
+
+          <p>
+            ตรวจสอบอาการและวิเคราะห์ปัญหา
+            ทั้ง Hardware และ Software
+          </p>
+
+          <ul>
+            <li>คอมช้า / ค้าง</li>
+            <li>เปิดไม่ติด</li>
+            <li>Windows มีปัญหา</li>
+            <li>โปรแกรมทำงานผิดปกติ</li>
+            <li>ตรวจสอบ Hardware / Software</li>
+          </ul>
+
+        </article>
+
+
+        <!-- 2 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            📦
+          </div>
+
+          <h3>
+            ลงโปรแกรม
+          </h3>
+
+          <p>
+            ติดตั้งและตั้งค่าซอฟต์แวร์
+            ตามลักษณะการใช้งาน
+          </p>
+
+          <ul>
+            <li>Microsoft Office</li>
+            <li>Adobe</li>
+            <li>โปรแกรมใช้งานทั่วไป</li>
+            <li>โปรแกรมสำหรับเรียน</li>
+            <li>โปรแกรมสำหรับทำงาน</li>
+          </ul>
+
+        </article>
+
+
+        <!-- 3 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            ▣
+          </div>
+
+          <h3>
+            ลง Windows
+          </h3>
+
+          <p>
+            ติดตั้งระบบปฏิบัติการใหม่
+            พร้อมตั้งค่าระบบให้พร้อมใช้งาน
+          </p>
+
+          <ul>
+            <li>Windows 10</li>
+            <li>Windows 11</li>
+            <li>ติดตั้ง Driver</li>
+            <li>ตั้งค่าระบบ</li>
+            <li>ช่วยจัดการ Backup ตามความเหมาะสม</li>
+          </ul>
+
+        </article>
+
+
+        <!-- 4 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            🐧
+          </div>
+
+          <h3>
+            ลง Linux
+          </h3>
+
+          <p>
+            ติดตั้ง Linux และช่วยตั้งค่า
+            สำหรับการใช้งานทั่วไปหรือการพัฒนา
+          </p>
+
+          <ul>
+            <li>Ubuntu</li>
+            <li>Linux Mint</li>
+            <li>Kali Linux</li>
+            <li>Linux Distribution อื่น ๆ</li>
+            <li>ตั้งค่าระบบและโปรแกรมพื้นฐาน</li>
+          </ul>
+
+        </article>
+
+
+        <!-- 5 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            &lt;/&gt;
+          </div>
+
+          <h3>
+            เขียนโปรแกรม / แก้โปรแกรม
+          </h3>
+
+          <p>
+            รับเขียนและแก้ไขโปรแกรม
+            ตาม Requirement ของผู้ว่าจ้าง
+          </p>
+
+          <ul>
+            <li>Python</li>
+            <li>C / C++</li>
+            <li>Java</li>
+            <li>HTML / CSS / JavaScript</li>
+            <li>แก้ Bug / แก้ Code</li>
+          </ul>
+
+        </article>
+
+
+        <!-- 6 -->
+
+        <article class="service-card">
+
+          <div class="service-icon">
+            ＋
+          </div>
+
+          <h3>
+            บริการด้าน IT อื่น ๆ
+          </h3>
+
+          <p>
+            สามารถสอบถามรายละเอียดงานที่ต้องการได้
+            เพื่อประเมินความเป็นไปได้และขอบเขตงาน
+          </p>
+
+          <ul>
+            <li>ปรึกษาปัญหาคอมพิวเตอร์</li>
+            <li>งาน Software</li>
+            <li>งาน Programming</li>
+            <li>งานระบบ Linux</li>
+            <li>งาน IT ตาม Requirement</li>
+          </ul>
+
+        </article>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       TARGET
+  ========================= -->
+
+  <section
+    class="target"
+    id="target"
+  >
+
+    <div class="container">
+
+      <div class="section-head">
+
+        <div class="section-label">
+          FOR EVERYONE
+        </div>
+
+        <h2>
+          เหมาะสำหรับ
+        </h2>
+
+        <p>
+          ให้บริการทั้งผู้ใช้งานทั่วไป
+          นักเรียน นักศึกษา คนทำงาน
+          และธุรกิจ
+        </p>
+
+      </div>
+
+
+      <div class="target-grid">
+
+
+        <div class="target-card">
+
+          <strong>
+            🎓 นักเรียน / นักศึกษา
+          </strong>
+
+          <span>
+            ติดตั้งโปรแกรมและช่วยแก้ปัญหาคอมพิวเตอร์
+          </span>
+
+        </div>
+
+
+        <div class="target-card">
+
+          <strong>
+            💼 คนทำงาน
+          </strong>
+
+          <span>
+            ดูแลเครื่องสำหรับการทำงานและ Software
+          </span>
+
+        </div>
+
+
+        <div class="target-card">
+
+          <strong>
+            🏢 พนักงานออฟฟิศ
+          </strong>
+
+          <span>
+            ช่วยตรวจสอบและแก้ไขปัญหาเบื้องต้น
+          </span>
+
+        </div>
+
+
+        <div class="target-card">
+
+          <strong>
+            👨‍💻 Developer
+          </strong>
+
+          <span>
+            Linux / Programming / Development Environment
+          </span>
+
+        </div>
+
+
+        <div class="target-card">
+
+          <strong>
+            🏪 ร้านค้า / ธุรกิจ
+          </strong>
+
+          <span>
+            บริการด้าน Computer และ Software
+          </span>
+
+        </div>
+
+
+        <div class="target-card">
+
+          <strong>
+            💻 ผู้ใช้งานทั่วไป
+          </strong>
+
+          <span>
+            ปรึกษาปัญหาคอมพิวเตอร์และการใช้งาน
+          </span>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       PROCESS
+  ========================= -->
+
+  <section id="process">
+
+    <div class="container">
+
+      <div class="section-head">
+
+        <div class="section-label">
+          HOW IT WORKS
+        </div>
+
+        <h2>
+          ขั้นตอนการให้บริการ
+        </h2>
+
+      </div>
+
+
+      <div class="process">
+
+
+        <div class="step">
+
+          <div class="number">
+            01
+          </div>
+
+          <h3>
+            ติดต่อ
+          </h3>
+
+          <p>
+            แจ้งอาการหรือรายละเอียดงานที่ต้องการ
+          </p>
+
+        </div>
+
+
+        <div class="step">
+
+          <div class="number">
+            02
+          </div>
+
+          <h3>
+            ตรวจสอบ
+          </h3>
+
+          <p>
+            ตรวจสอบปัญหาและวิเคราะห์สาเหตุ
+          </p>
+
+        </div>
+
+
+        <div class="step">
+
+          <div class="number">
+            03
+          </div>
+
+          <h3>
+            ประเมินงาน
+          </h3>
+
+          <p>
+            แจ้งแนวทางและรายละเอียด
+            ก่อนเริ่มงาน
+          </p>
+
+        </div>
+
+
+        <div class="step">
+
+          <div class="number">
+            04
+          </div>
+
+          <h3>
+            ดำเนินการ
+          </h3>
+
+          <p>
+            ดำเนินงานและทดสอบระบบ
+            ก่อนส่งมอบ
+          </p>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       LOCATION
+  ========================= -->
+
+  <section>
+
+    <div class="container">
+
+      <div class="section-head">
+
+        <div class="section-label">
+          LOCATION
+        </div>
+
+        <h2>
+          พื้นที่ให้บริการ
+        </h2>
+
+      </div>
+
+
+      <div class="location-box">
+
+        <h3>
+          📍 ห้าแยกปากเกร็ด
+        </h3>
+
+        <p>
+          และพื้นที่ใกล้เคียง
+        </p>
+
+        <p style="margin-top: 10px;">
+
+          สามารถสอบถามอาการหรือส่งรายละเอียดงาน
+          มาก่อนได้ เพื่อประเมินราคาและแนวทางแก้ไข
+          ก่อนเริ่มงาน
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       CONTACT
+  ========================= -->
+
+  <section id="contact">
+
+    <div class="container">
+
+      <div class="contact-box">
+
+
+        <div class="contact-content">
+
+
+          <!-- QR CODE -->
+
+          <div class="qr-box">
+
+            <img
+              src="assets/line-qr.jpg"
+              alt="QR Code LINE สำหรับติดต่อร้าน"
+            >
+
+            <div class="qr-label">
+              สแกนเพื่อเพิ่มเพื่อนใน LINE
+            </div>
+
+          </div>
+
+
+          <!-- CONTACT INFO -->
+
+          <div class="contact-info">
+
+            <div class="section-label">
+              CONTACT
+            </div>
+
+            <h2>
+              มีปัญหาคอม?
+            </h2>
+
+            <p>
+
+              ติดต่อสอบถามอาการ
+              หรือรายละเอียดงานได้
+
+              <br>
+
+              สามารถส่งรายละเอียดปัญหา
+              หรือรูปภาพมาให้ตรวจสอบเบื้องต้นได้
+
+            </p>
+
+
+            <div class="open">
+              เปิดทุกวัน · 09:00 - 18:30 น.
+            </div>
+
+
+            <div class="contact-actions">
+
+              <a
+                href="tel:0956043539"
+                class="phone"
+              >
+                095-604-3539
+              </a>
+
+              <br>
+
+              <a
+                href="tel:0956043539"
+                class="btn btn-primary"
+              >
+                📞 โทรติดต่อ
+              </a>
+
+            </div>
+
+          </div>
+
+
+          <div class="contact-map">
+
+            <iframe
+              src="https://www.google.com/maps?q=WG43%2BH7%20เทศบาลนครปากเกร็ด%20อำเภอปากเกร็ด%20นนทบุรี&output=embed"
+              title="แผนที่เทศบาลนครปากเกร็ด"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- =========================
+       FOOTER
+  ========================= -->
+
+  <footer>
+
+    <div class="container footer-inner">
+
+      <div>
+        ห้าแยกปากเกร็ด
+        · Computer & IT Services
+      </div>
+
+      <div>
+        เปิดทุกวัน
+        09:00 - 18:30 น.
+      </div>
+
+    </div>
+
+  </footer>
+
+
+</body>
+
+</html>
