@@ -945,9 +945,49 @@
 
     .receipt-details {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(160px, 0.8fr);
       gap: 12px;
-      margin-top: 22px;
+      margin-top: 18px;
+    }
+
+    .receipt-body {
+      display: grid;
+      grid-template-columns: minmax(210px, 0.8fr) minmax(0, 1.2fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .receipt-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #26394c;
+      font-size: 14px;
+    }
+
+    .receipt-table th,
+    .receipt-table td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #e2e8ed;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .receipt-table th {
+      background: #f2f6f9;
+      color: #657587;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .receipt-table th:last-child,
+    .receipt-table td:last-child {
+      width: 1%;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .receipt-table td:last-child {
+      color: #172536;
+      font-weight: 700;
     }
 
     .receipt-detail {
@@ -1020,56 +1060,99 @@
     @media print {
       @page {
         size: A4;
-        margin: 16mm;
+        margin: 10mm;
       }
 
-      body * {
-        visibility: hidden;
+      html,
+      body {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        padding: 0;
+        overflow: visible;
       }
 
-      #receipt,
-      #receipt * {
-        visibility: visible;
+      body > :not(#receipt) {
+        display: none !important;
       }
 
       #receipt {
-        position: absolute;
-        top: 0;
-        left: 0;
+        display: block !important;
+        position: static;
         width: 100%;
         max-width: none;
         margin: 0;
-        padding: 0;
+        padding: 5mm;
         border: 0;
         background: #fff;
         box-shadow: none;
         color: #172536;
+        font-size: 10pt;
+        break-inside: avoid;
       }
 
-      #receipt .receipt-header,
-      #receipt .receipt-meta,
-      #receipt .receipt-items-header,
-      #receipt .receipt-line,
-      #receipt .receipt-detail,
-      #receipt .receipt-total,
-      #receipt .receipt-description {
+      #receipt .receipt-header {
+        padding-bottom: 4mm;
+      }
+
+      #receipt .receipt-meta {
+        gap: 2mm;
+        margin: 4mm 0;
+      }
+
+      #receipt .receipt-meta-item {
+        padding: 2mm 3mm;
+      }
+
+      #receipt .receipt-body {
+        grid-template-columns: minmax(45mm, 0.75fr) minmax(0, 1.25fr);
+        gap: 4mm;
+      }
+
+      #receipt .receipt-details {
+        gap: 3mm;
+        margin-top: 4mm;
+      }
+
+      #receipt .receipt-detail {
+        padding: 3mm;
+      }
+
+      #receipt .receipt-table {
+        font-size: 9pt;
+      }
+
+      #receipt .receipt-table th,
+      #receipt .receipt-table td {
+        padding: 2.5mm;
+      }
+
+      #receipt .receipt-table thead {
+        display: table-header-group;
+      }
+
+      #receipt .receipt-table tr {
+        break-inside: avoid;
+      }
+
+      #receipt .receipt-total {
+        margin-top: 4mm;
+        padding: 3mm 4mm;
+      }
+
+      #receipt .receipt-note {
+        margin-top: 3mm;
+        padding: 2mm 3mm;
+      }
+
+      #receipt .receipt-actions {
+        display: none;
+      }
+
+      #receipt,
+      #receipt * {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
-      }
-
-      #receipt .receipt-total,
-      #receipt .receipt-note,
-      #receipt .receipt-meta-item,
-      #receipt .receipt-detail {
-        background: #fff !important;
-      }
-
-      #receipt .receipt-total strong {
-        color: #172536;
-      }
-
-      .receipt-actions {
-        display: none;
       }
     }
 
@@ -1339,7 +1422,8 @@
       }
 
       .receipt-meta,
-      .receipt-details {
+      .receipt-details,
+      .receipt-body {
         grid-template-columns: 1fr;
       }
 
@@ -1833,49 +1917,55 @@
 
       </div>
 
-      <article class="receipt" id="receipt" aria-live="polite" hidden>
-        <header class="receipt-header">
-          <div class="receipt-brand">
-            <div class="receipt-mark" aria-hidden="true">PK</div>
-            <div>
-              <p class="receipt-shop-name">ห้าแยกปากเกร็ด</p>
-              <p class="receipt-shop-service">Computer &amp; IT Services · 095-604-3539</p>
-            </div>
-          </div>
-          <div class="receipt-heading">
-            <div class="section-label">SERVICE ESTIMATE</div>
-            <h3>ใบสรุปประเมินงาน</h3>
-          </div>
-        </header>
-        <div class="receipt-meta">
-          <div class="receipt-meta-item"><span>เลขอ้างอิง</span><strong id="receipt-number"></strong></div>
-          <div class="receipt-meta-item"><span>วันที่ประเมิน</span><strong id="receipt-date"></strong></div>
-          <div class="receipt-meta-item"><span>ผู้ติดต่อ</span><strong id="receipt-customer"></strong></div>
-          <div class="receipt-meta-item"><span>อุปกรณ์ / รุ่น</span><strong id="receipt-device"></strong></div>
-        </div>
-        <div class="receipt-items-header"><span>รายการบริการ</span><span>ราคา</span></div>
-        <div id="receipt-items"></div>
-        <div class="receipt-details">
-          <section class="receipt-detail">
-            <h4>อาการ / รายละเอียดงาน</h4>
-            <p class="receipt-description" id="receipt-symptoms"></p>
-          </section>
-          <section class="receipt-detail">
-            <h4>ภาพประกอบ</h4>
-            <p id="receipt-photos"></p>
-          </section>
-        </div>
-        <div class="receipt-total"><span>ยอดประเมินเบื้องต้น</span><strong id="receipt-total"></strong></div>
-        <p class="receipt-note">เอกสารนี้เป็นใบประเมินเบื้องต้น ไม่ใช่ใบเสร็จรับเงิน ราคาสุดท้ายและคิวงานต้องยืนยันกับร้านก่อนเริ่มบริการ</p>
-        <div class="receipt-actions">
-          <button class="btn btn-primary" id="print-receipt" type="button">พิมพ์ / บันทึก PDF</button>
-          <a class="btn btn-secondary" href="tel:0956043539">โทรยืนยันกับร้าน</a>
-        </div>
-      </article>
-
     </div>
 
   </section>
+
+  <article class="receipt" id="receipt" aria-live="polite" hidden>
+    <header class="receipt-header">
+      <div class="receipt-brand">
+        <div class="receipt-mark" aria-hidden="true">PK</div>
+        <div>
+          <p class="receipt-shop-name">ห้าแยกปากเกร็ด</p>
+          <p class="receipt-shop-service">Computer &amp; IT Services · 095-604-3539</p>
+        </div>
+      </div>
+      <div class="receipt-heading">
+        <div class="section-label">SERVICE ESTIMATE</div>
+        <h3>ใบสรุปประเมินงาน</h3>
+      </div>
+    </header>
+    <div class="receipt-meta">
+      <div class="receipt-meta-item"><span>เลขอ้างอิง</span><strong id="receipt-number"></strong></div>
+      <div class="receipt-meta-item"><span>วันที่ประเมิน</span><strong id="receipt-date"></strong></div>
+      <div class="receipt-meta-item"><span>ผู้ติดต่อ</span><strong id="receipt-customer"></strong></div>
+      <div class="receipt-meta-item"><span>อุปกรณ์ / รุ่น</span><strong id="receipt-device"></strong></div>
+    </div>
+    <div class="receipt-body">
+      <div class="receipt-details">
+        <section class="receipt-detail">
+          <h4>อาการ / รายละเอียดงาน</h4>
+          <p class="receipt-description" id="receipt-symptoms"></p>
+        </section>
+        <section class="receipt-detail">
+          <h4>ภาพประกอบ</h4>
+          <p id="receipt-photos"></p>
+        </section>
+      </div>
+      <table class="receipt-table">
+        <thead>
+          <tr><th>รายละเอียดบริการ</th><th>ราคา</th></tr>
+        </thead>
+        <tbody id="receipt-items"></tbody>
+      </table>
+    </div>
+    <div class="receipt-total"><span>ยอดประเมินเบื้องต้น</span><strong id="receipt-total"></strong></div>
+    <p class="receipt-note">เอกสารนี้เป็นใบประเมินเบื้องต้น ไม่ใช่ใบเสร็จรับเงิน ราคาสุดท้ายและคิวงานต้องยืนยันกับร้านก่อนเริ่มบริการ</p>
+    <div class="receipt-actions">
+      <button class="btn btn-primary" id="print-receipt" type="button">พิมพ์ / บันทึก PDF</button>
+      <a class="btn btn-secondary" href="tel:0956043539">โทรยืนยันกับร้าน</a>
+    </div>
+  </article>
 
 
   <section class="target" id="target">
@@ -2468,14 +2558,13 @@
         rows.replaceChildren();
 
         const addReceiptRow = (labelText, price) => {
-          const row = document.createElement("div");
-          row.className = "receipt-line";
-          const label = document.createElement("span");
+          const tableRow = document.createElement("tr");
+          const label = document.createElement("td");
           label.textContent = labelText;
-          const amount = document.createElement("strong");
+          const amount = document.createElement("td");
           amount.textContent = formatBaht(price);
-          row.append(label, amount);
-          rows.append(row);
+          tableRow.append(label, amount);
+          rows.append(tableRow);
         };
 
         if (tasks.length === 0 && programs.length === 0) {
