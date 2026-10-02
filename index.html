@@ -592,6 +592,261 @@
 
 
     /* =========================
+       SERVICE REQUEST
+    ========================= */
+
+    .request-section {
+      background: rgba(255, 255, 255, 0.018);
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .request-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.8fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .request-form,
+    .estimate-panel,
+    .receipt {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      background: #101925;
+      padding: 28px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .field,
+    .task-list,
+    .photo-field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+
+    .field label,
+    .task-list legend,
+    .photo-field label {
+      color: #e5ebf2;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea,
+    .photo-field input {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: #0a111b;
+      color: #f5f7fa;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus,
+    .photo-field input:focus {
+      outline: 2px solid #16bfff;
+      outline-offset: 2px;
+    }
+
+    .task-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border: 0;
+      margin: 0;
+    }
+
+    .task-list legend {
+      margin-bottom: 8px;
+    }
+
+    .task-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.025);
+      color: #d6dee8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .task-option input {
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      accent-color: #16bfff;
+      flex: 0 0 auto;
+    }
+
+    .field-hint,
+    .form-note,
+    .photo-error {
+      color: #9da8b7;
+      font-size: 13px;
+    }
+
+    .photo-error {
+      color: #ff9b9b;
+    }
+
+    .photo-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .photo-preview img {
+      width: 76px;
+      height: 76px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .request-submit {
+      width: 100%;
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .estimate-panel {
+      position: sticky;
+      top: 96px;
+    }
+
+    .estimate-panel h3,
+    .receipt h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .estimate-line,
+    .receipt-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd4df;
+      font-size: 14px;
+    }
+
+    .estimate-total,
+    .receipt-total {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 14px;
+      color: #fff;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .estimate-total strong,
+    .receipt-total strong {
+      color: #5ee88a;
+    }
+
+    .estimate-disclaimer {
+      margin-top: 14px;
+      color: #9da8b7;
+      font-size: 12px;
+    }
+
+    .receipt {
+      margin-top: 24px;
+    }
+
+    .receipt-meta {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 16px;
+      color: #cbd4df;
+      font-size: 14px;
+    }
+
+    .receipt-description {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .receipt-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .receipt-actions .btn {
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #receipt,
+      #receipt * {
+        visibility: visible;
+      }
+
+      #receipt {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        margin: 0;
+        border: 0;
+        background: #fff;
+        color: #111;
+      }
+
+      #receipt .receipt-meta,
+      #receipt .receipt-line,
+      #receipt .receipt-total,
+      #receipt .receipt-description {
+        color: #111;
+      }
+
+      #receipt .receipt-total strong {
+        color: #111;
+      }
+
+      .receipt-actions {
+        display: none;
+      }
+    }
+
+
+    /* =========================
        CONTACT
     ========================= */
 
@@ -752,6 +1007,10 @@
 
     @media (max-width: 1000px) {
 
+      .request-layout {
+        grid-template-columns: minmax(0, 1fr) 280px;
+      }
+
       .contact-content {
         grid-template-columns: 160px minmax(0, 1fr);
       }
@@ -806,8 +1065,27 @@
         grid-template-columns: 1fr;
       }
 
+      .request-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .estimate-panel {
+        position: static;
+      }
+
       .contact-box {
         padding: 30px;
+      }
+
+      .request-form,
+      .estimate-panel,
+      .receipt {
+        padding: 22px;
+      }
+
+      .form-grid,
+      .task-list {
+        grid-template-columns: 1fr;
       }
 
       .contact-content {
@@ -1162,10 +1440,152 @@
        TARGET
   ========================= -->
 
-  <section
-    class="target"
-    id="target"
-  >
+  <!-- =========================
+       SERVICE REQUEST
+  ========================= -->
+  <section class="request-section" id="request">
+
+    <div class="container">
+
+      <div class="section-head">
+        <div class="section-label">SERVICE REQUEST</div>
+        <h2>เปิดคิวประเมินงาน</h2>
+        <p>แจ้งอาการ เลือกงานที่ต้องการ และดูราคาเบื้องต้นก่อนส่งเครื่อง</p>
+      </div>
+
+      <div class="request-layout">
+
+        <form class="request-form" id="request-form">
+          <div class="form-grid">
+
+            <div class="field">
+              <label for="customer-name">ชื่อผู้ติดต่อ *</label>
+              <input id="customer-name" name="customerName" autocomplete="name" required>
+            </div>
+
+            <div class="field">
+              <label for="customer-phone">เบอร์โทรศัพท์</label>
+              <input id="customer-phone" name="customerPhone" type="tel" autocomplete="tel" inputmode="tel">
+            </div>
+
+            <div class="field field-full">
+              <label for="device">อุปกรณ์ / รุ่น</label>
+              <input id="device" name="device" placeholder="เช่น Notebook Lenovo IdeaPad หรือ PC ตั้งโต๊ะ">
+            </div>
+
+            <fieldset class="task-list field-full">
+              <legend>เลือกงานที่ต้องการ (งานแรกเริ่มต้น 200 บาท งานถัดไปเพิ่มงานละ 200 บาท)</legend>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="windows">
+                <span>ติดตั้ง Windows</span>
+              </label>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="linux">
+                <span>ติดตั้ง Linux</span>
+              </label>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="cleaning">
+                <span>ทำความสะอาดเครื่อง</span>
+              </label>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="software">
+                <span>ติดตั้ง / ตั้งค่าโปรแกรม</span>
+              </label>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="repair">
+                <span>ตรวจเช็ก / แก้ปัญหาเพิ่มเติม</span>
+              </label>
+
+              <label class="task-option">
+                <input type="checkbox" name="tasks" value="other">
+                <span>งานอื่น ๆ</span>
+              </label>
+            </fieldset>
+
+            <div class="field field-full" id="windows-options" hidden>
+              <label for="windows-version">Windows ที่ต้องการ</label>
+              <select id="windows-version" name="windowsVersion">
+                <option value="Windows 11">Windows 11</option>
+                <option value="Windows 10">Windows 10</option>
+                <option value="ยังไม่แน่ใจ ขอคำแนะนำ">ยังไม่แน่ใจ ขอคำแนะนำ</option>
+              </select>
+            </div>
+
+            <div class="field field-full" id="linux-options" hidden>
+              <label for="linux-distro">Linux ที่ต้องการ</label>
+              <select id="linux-distro" name="linuxDistro">
+                <option value="Ubuntu">Ubuntu</option>
+                <option value="Linux Mint">Linux Mint</option>
+                <option value="Kali Linux">Kali Linux</option>
+                <option value="อื่น ๆ / ขอคำแนะนำ">อื่น ๆ / ขอคำแนะนำ</option>
+              </select>
+            </div>
+
+            <div class="field field-full" id="other-task-field" hidden>
+              <label for="other-task">ระบุงานอื่น ๆ</label>
+              <input id="other-task" name="otherTask" maxlength="120" placeholder="ระบุงานที่ต้องการ">
+            </div>
+
+            <div class="field field-full">
+              <label for="symptoms">อาการหรือรายละเอียดงาน *</label>
+              <textarea id="symptoms" name="symptoms" required maxlength="1200" placeholder="เล่าอาการที่พบ เช่น เปิดไม่ติด มีเสียงดัง เครื่องช้า หรือแจ้งข้อความ error"></textarea>
+            </div>
+
+            <div class="photo-field field-full">
+              <label for="photos">แนบภาพประกอบ (ไม่บังคับ)</label>
+              <input id="photos" name="photos" type="file" accept="image/*" multiple>
+              <span class="field-hint">เลือกได้ไม่เกิน 4 ภาพ ภาพละไม่เกิน 5 MB</span>
+              <span class="photo-error" id="photo-error" role="alert" hidden></span>
+              <div class="photo-preview" id="photo-preview" aria-live="polite"></div>
+            </div>
+
+            <div class="field field-full">
+              <button class="btn btn-primary request-submit" type="submit">สร้างใบสรุปราคา</button>
+              <p class="form-note">ข้อมูลและรูปภาพยังไม่ถูกส่งให้ร้านหรือบันทึกออนไลน์ สามารถพิมพ์ใบสรุปแล้วติดต่อร้านเพื่อยืนยันคิวได้</p>
+            </div>
+
+          </div>
+        </form>
+
+        <aside class="estimate-panel" aria-live="polite">
+          <h3>ประมาณราคา</h3>
+          <div id="estimate-tasks"></div>
+          <div class="estimate-total"><span>รวมเบื้องต้น</span><strong id="estimate-total">200 บาท</strong></div>
+          <p class="estimate-disclaimer">ราคาประเมินเบื้องต้น ร้านจะแจ้งราคาสุดท้ายหลังตรวจอาการและยืนยันขอบเขตงาน</p>
+        </aside>
+
+      </div>
+
+      <article class="receipt" id="receipt" aria-live="polite" hidden>
+        <h3>ใบสรุปประเมินงาน</h3>
+        <div class="receipt-meta">
+          <span id="receipt-number"></span>
+          <span id="receipt-date"></span>
+          <span id="receipt-customer"></span>
+          <span id="receipt-device"></span>
+        </div>
+        <div id="receipt-items"></div>
+        <div class="receipt-line"><span>อาการ / รายละเอียด</span><span class="receipt-description" id="receipt-symptoms"></span></div>
+        <div class="receipt-line"><span>ภาพประกอบ</span><span id="receipt-photos"></span></div>
+        <div class="receipt-total"><span>ยอดประเมินเบื้องต้น</span><strong id="receipt-total"></strong></div>
+        <p class="estimate-disclaimer">เอกสารนี้เป็นใบประเมินเบื้องต้น ไม่ใช่ใบเสร็จรับเงิน ราคาสุดท้ายและคิวงานต้องยืนยันกับร้านก่อนเริ่มบริการ</p>
+        <div class="receipt-actions">
+          <button class="btn btn-primary" id="print-receipt" type="button">พิมพ์ / บันทึก PDF</button>
+          <a class="btn btn-secondary" href="tel:0956043539">โทรยืนยันกับร้าน</a>
+        </div>
+      </article>
+
+    </div>
+
+  </section>
+
+
+  <section class="target" id="target">
 
     <div class="container">
 
@@ -1553,6 +1973,153 @@
 
   </footer>
 
+
+  <script>
+    (() => {
+      const form = document.getElementById("request-form");
+      const taskInputs = [...form.querySelectorAll('input[name="tasks"]')];
+      const photoInput = document.getElementById("photos");
+      const photoError = document.getElementById("photo-error");
+      const photoPreview = document.getElementById("photo-preview");
+      const receipt = document.getElementById("receipt");
+      const taskNames = {
+        windows: "ติดตั้ง Windows",
+        linux: "ติดตั้ง Linux",
+        cleaning: "ทำความสะอาดเครื่อง",
+        software: "ติดตั้ง / ตั้งค่าโปรแกรม",
+        repair: "ตรวจเช็ก / แก้ปัญหาเพิ่มเติม",
+        other: "งานอื่น ๆ"
+      };
+
+      const selectedTasks = () => taskInputs.filter((input) => input.checked);
+
+      const taskDescription = (input) => {
+        if (input.value === "windows") {
+          return `${taskNames.windows} (${document.getElementById("windows-version").value})`;
+        }
+        if (input.value === "linux") {
+          return `${taskNames.linux} (${document.getElementById("linux-distro").value})`;
+        }
+        if (input.value === "other") {
+          const detail = document.getElementById("other-task").value.trim();
+          return detail ? `${taskNames.other}: ${detail}` : taskNames.other;
+        }
+        return taskNames[input.value];
+      };
+
+      const formatBaht = (amount) => `${amount.toLocaleString("th-TH")} บาท`;
+
+      const updateOptions = () => {
+        const values = new Set(selectedTasks().map((input) => input.value));
+        document.getElementById("windows-options").hidden = !values.has("windows");
+        document.getElementById("linux-options").hidden = !values.has("linux");
+        document.getElementById("other-task-field").hidden = !values.has("other");
+      };
+
+      const updateEstimate = () => {
+        updateOptions();
+        const tasks = selectedTasks();
+        const total = Math.max(1, tasks.length) * 200;
+        const taskList = document.getElementById("estimate-tasks");
+        taskList.replaceChildren();
+
+        if (tasks.length === 0) {
+          const row = document.createElement("div");
+          row.className = "estimate-line";
+          row.innerHTML = "<span>ค่าบริการเริ่มต้น</span><strong>200 บาท</strong>";
+          taskList.append(row);
+        }
+
+        tasks.forEach((task) => {
+          const row = document.createElement("div");
+          row.className = "estimate-line";
+          const label = document.createElement("span");
+          label.textContent = taskDescription(task);
+          const price = document.createElement("strong");
+          price.textContent = formatBaht(200);
+          row.append(label, price);
+          taskList.append(row);
+        });
+
+        document.getElementById("estimate-total").textContent = formatBaht(total);
+      };
+
+      taskInputs.forEach((input) => input.addEventListener("change", updateEstimate));
+      form.addEventListener("input", updateEstimate);
+      form.addEventListener("change", updateEstimate);
+
+      photoInput.addEventListener("change", () => {
+        photoError.hidden = true;
+        photoPreview.replaceChildren();
+        const files = [...photoInput.files];
+        const invalid = files.length > 4 || files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024);
+
+        if (invalid) {
+          photoError.textContent = "กรุณาเลือกไฟล์ภาพไม่เกิน 4 ภาพ และแต่ละภาพต้องมีขนาดไม่เกิน 5 MB";
+          photoError.hidden = false;
+          photoInput.value = "";
+          return;
+        }
+
+        files.forEach((file) => {
+          const image = document.createElement("img");
+          image.alt = `ภาพตัวอย่าง: ${file.name}`;
+          image.src = URL.createObjectURL(file);
+          image.onload = () => URL.revokeObjectURL(image.src);
+          photoPreview.append(image);
+        });
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const files = [...photoInput.files];
+        if (files.length > 4 || files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+          photoError.textContent = "กรุณาตรวจสอบจำนวนและขนาดไฟล์ภาพอีกครั้ง";
+          photoError.hidden = false;
+          return;
+        }
+
+        const tasks = selectedTasks();
+        const total = Math.max(1, tasks.length) * 200;
+        const ticket = `PK-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`;
+        const now = new Date();
+        const rows = document.getElementById("receipt-items");
+        rows.replaceChildren();
+
+        const addReceiptRow = (labelText, price) => {
+          const row = document.createElement("div");
+          row.className = "receipt-line";
+          const label = document.createElement("span");
+          label.textContent = labelText;
+          const amount = document.createElement("strong");
+          amount.textContent = formatBaht(price);
+          row.append(label, amount);
+          rows.append(row);
+        };
+
+        if (tasks.length === 0) {
+          addReceiptRow("ค่าบริการเริ่มต้น", 200);
+        } else {
+          tasks.forEach((task) => addReceiptRow(taskDescription(task), 200));
+        }
+
+        document.getElementById("receipt-number").textContent = `เลขอ้างอิงประเมิน: ${ticket}`;
+        document.getElementById("receipt-date").textContent = `วันที่: ${new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(now)}`;
+        document.getElementById("receipt-customer").textContent = `ผู้ติดต่อ: ${document.getElementById("customer-name").value.trim()}${document.getElementById("customer-phone").value.trim() ? ` · ${document.getElementById("customer-phone").value.trim()}` : ""}`;
+        document.getElementById("receipt-device").textContent = `อุปกรณ์: ${document.getElementById("device").value.trim() || "ไม่ได้ระบุ"}`;
+        document.getElementById("receipt-symptoms").textContent = document.getElementById("symptoms").value.trim();
+        document.getElementById("receipt-photos").textContent = files.length ? `แนบ ${files.length} ภาพ (ต้องส่งภาพให้ร้านแยก)` : "ไม่ได้แนบภาพ";
+        document.getElementById("receipt-total").textContent = formatBaht(total);
+        receipt.hidden = false;
+        receipt.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      document.getElementById("print-receipt").addEventListener("click", () => window.print());
+      updateEstimate();
+    })();
+  </script>
 
 </body>
 
