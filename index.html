@@ -1053,6 +1053,147 @@
       font: inherit;
     }
 
+    .queue-tools {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 28px;
+    }
+
+    .queue-tool,
+    .staff-panel {
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: #101925;
+    }
+
+    .queue-tool h3,
+    .staff-panel h3 {
+      margin-bottom: 14px;
+      font-size: 19px;
+    }
+
+    .queue-lookup-form,
+    .staff-login-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .staff-mfa-panel {
+      display: grid;
+      gap: 14px;
+      max-width: 520px;
+    }
+
+    .staff-mfa-qr {
+      width: 190px;
+      height: 190px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .staff-mfa-secret {
+      overflow-wrap: anywhere;
+      color: #63d6ff;
+      font-family: monospace;
+    }
+
+    .staff-mfa-code {
+      max-width: 220px;
+      letter-spacing: 4px;
+      text-align: center;
+    }
+
+    .queue-tool input,
+    .staff-panel input,
+    .staff-panel select {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      background: #0a111b;
+      color: #f5f7fa;
+      padding: 10px 12px;
+      font: inherit;
+    }
+
+    .queue-tool button,
+    .staff-panel button {
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .queue-result,
+    .staff-message {
+      margin-top: 12px;
+      color: #cbd4df;
+      font-size: 14px;
+    }
+
+    .queue-result strong {
+      color: #5ee88a;
+    }
+
+    .staff-section {
+      background: rgba(255, 255, 255, 0.018);
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+    }
+
+    .staff-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .staff-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .staff-queue-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      padding: 18px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .staff-queue-item h4 {
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .staff-queue-item p {
+      color: #aeb9c7;
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .staff-queue-controls {
+      display: grid;
+      grid-template-columns: 150px auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .staff-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .staff-photos a {
+      color: #63d6ff;
+      font-size: 13px;
+      text-decoration: underline;
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -1407,6 +1548,18 @@
       .form-grid,
       .task-list {
         grid-template-columns: 1fr;
+      }
+
+      .queue-tools {
+        grid-template-columns: 1fr;
+      }
+
+      .staff-queue-item {
+        grid-template-columns: 1fr;
+      }
+
+      .staff-queue-controls {
+        grid-template-columns: minmax(0, 1fr) auto;
       }
 
       .receipt {
@@ -1818,8 +1971,8 @@
             </div>
 
             <div class="field">
-              <label for="customer-phone">เบอร์โทรศัพท์</label>
-              <input id="customer-phone" name="customerPhone" type="tel" autocomplete="tel" inputmode="tel">
+              <label for="customer-phone">เบอร์โทรศัพท์ *</label>
+              <input id="customer-phone" name="customerPhone" type="tel" autocomplete="tel" inputmode="tel" required>
             </div>
 
             <div class="field field-full">
@@ -1901,8 +2054,9 @@
             </div>
 
             <div class="field field-full">
-              <button class="btn btn-primary request-submit" type="submit">สร้างใบสรุปราคา</button>
-              <p class="form-note">ข้อมูลและรูปภาพยังไม่ถูกส่งให้ร้านหรือบันทึกออนไลน์ สามารถพิมพ์ใบสรุปแล้วติดต่อร้านเพื่อยืนยันคิวได้</p>
+              <button class="btn btn-primary request-submit" id="request-submit" type="submit">ส่งคำขอและสร้างใบสรุป</button>
+              <p class="form-note">ข้อมูลและรูปภาพจะถูกส่งให้ร้านเพื่อเปิดคิว กรุณาเก็บรหัสคิวไว้ตรวจสอบสถานะ</p>
+              <p class="queue-result" id="request-message" role="status" aria-live="polite"></p>
             </div>
 
           </div>
@@ -1915,6 +2069,30 @@
           <p class="estimate-disclaimer">ราคาประเมินเบื้องต้น ร้านจะแจ้งราคาสุดท้ายหลังตรวจอาการและยืนยันขอบเขตงาน</p>
         </aside>
 
+      </div>
+
+      <div class="queue-tools">
+        <section class="queue-tool">
+          <h3>ตรวจสอบสถานะคิว</h3>
+          <form class="queue-lookup-form" id="queue-lookup-form">
+            <label class="field">
+              <span>เบอร์โทรศัพท์ที่ใช้เปิดคิว</span>
+              <input id="lookup-phone" type="tel" inputmode="tel" autocomplete="tel" required>
+            </label>
+            <label class="field">
+              <span>รหัสคิว</span>
+              <input id="lookup-ticket" placeholder="เช่น PK-20261002-..." required>
+            </label>
+            <button class="btn btn-secondary" type="submit">ค้นหาคิว</button>
+          </form>
+          <p class="queue-result" id="queue-result" role="status" aria-live="polite"></p>
+        </section>
+
+        <section class="queue-tool">
+          <h3>สำหรับช่าง</h3>
+          <p class="field-hint">เข้าสู่ระบบเพื่อดูรายละเอียดและจัดการคิว</p>
+          <a class="btn btn-secondary" href="#staff">เข้าสู่หน้าจัดการคิว</a>
+        </section>
       </div>
 
     </div>
@@ -1940,6 +2118,7 @@
       <div class="receipt-meta-item"><span>วันที่ประเมิน</span><strong id="receipt-date"></strong></div>
       <div class="receipt-meta-item"><span>ผู้ติดต่อ</span><strong id="receipt-customer"></strong></div>
       <div class="receipt-meta-item"><span>อุปกรณ์ / รุ่น</span><strong id="receipt-device"></strong></div>
+      <div class="receipt-meta-item"><span>สถานะคิว</span><strong id="receipt-status"></strong></div>
     </div>
     <div class="receipt-body">
       <div class="receipt-details">
@@ -1966,6 +2145,59 @@
       <a class="btn btn-secondary" href="tel:0956043539">โทรยืนยันกับร้าน</a>
     </div>
   </article>
+
+  <section class="staff-section" id="staff">
+    <div class="container">
+      <div class="section-head">
+        <div class="section-label">TECHNICIAN</div>
+        <h2>จัดการคิวงาน</h2>
+        <p>สงวนสิทธิ์สำหรับบัญชีช่างที่ได้รับอนุญาต</p>
+      </div>
+
+      <div class="staff-panel" id="staff-login-panel">
+        <form class="staff-login-form" id="staff-login-form">
+          <label class="field">
+            <span>อีเมลช่าง</span>
+            <input id="staff-email" type="email" autocomplete="username" required>
+          </label>
+          <label class="field">
+            <span>รหัสผ่าน</span>
+            <input id="staff-password" type="password" autocomplete="current-password" required>
+          </label>
+          <button class="btn btn-primary" type="submit">เข้าสู่ระบบ</button>
+        </form>
+        <p class="staff-message" id="staff-login-message" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="staff-panel" id="staff-mfa-panel" hidden>
+        <h3 id="staff-mfa-title">ยืนยันตัวตนช่าง</h3>
+        <div id="staff-mfa-enroll" hidden>
+          <p class="field-hint">สแกน QR ด้วย Google Authenticator, Microsoft Authenticator หรือแอป TOTP แล้วกรอกรหัส 6 หลัก</p>
+          <img class="staff-mfa-qr" id="staff-mfa-qr" alt="QR สำหรับตั้งค่าแอปยืนยันตัวตน">
+          <p class="field-hint">หรือกรอกรหัสนี้ในแอป:</p>
+          <strong class="staff-mfa-secret" id="staff-mfa-secret"></strong>
+        </div>
+        <form class="staff-mfa-panel" id="staff-mfa-form">
+          <label class="field">
+            <span>รหัสจากแอป Authenticator</span>
+            <input class="staff-mfa-code" id="staff-mfa-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" required>
+          </label>
+          <button class="btn btn-primary" id="staff-mfa-submit" type="submit">ยืนยันรหัส</button>
+        </form>
+        <p class="staff-message" id="staff-mfa-message" role="status" aria-live="polite"></p>
+        <button class="btn btn-secondary" id="staff-mfa-cancel" type="button">ยกเลิกและออกจากระบบ</button>
+      </div>
+
+      <div class="staff-panel" id="staff-dashboard" hidden>
+        <div class="staff-toolbar">
+          <p id="staff-account"></p>
+          <button class="btn btn-secondary" id="staff-logout" type="button">ออกจากระบบ</button>
+        </div>
+        <div class="staff-list" id="staff-list"></div>
+        <p class="staff-message" id="staff-message" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
 
 
   <section class="target" id="target">
@@ -2357,6 +2589,8 @@
   </footer>
 
 
+  <script src="assets/supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (() => {
       const form = document.getElementById("request-form");
@@ -2536,7 +2770,7 @@
         });
       });
 
-      form.addEventListener("submit", (event) => {
+      form.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!form.reportValidity()) return;
 
@@ -2549,11 +2783,44 @@
 
         const tasks = selectedTasks();
         const programs = selectedPrograms();
-        const baseTotal = tasks.length ? tasks.length * 200 : 0;
-        const programTotal = programs.length ? 200 + (programs.length - 1) * 100 : 0;
-        const total = baseTotal + programTotal || 200;
-        const ticket = `PK-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`;
-        const now = new Date();
+        const config = window.SUPABASE_CONFIG;
+        const message = document.getElementById("request-message");
+        const submitButton = document.getElementById("request-submit");
+        if (!config?.url || !config?.anonKey || config.url.includes("YOUR_PROJECT_REF") || config.anonKey.includes("YOUR_SUPABASE")) {
+          message.textContent = "ระบบคิวยังไม่ได้เชื่อม Supabase กรุณาติดต่อร้านทางโทรศัพท์ก่อน";
+          return;
+        }
+
+        const requestBody = {
+          customerName: document.getElementById("customer-name").value.trim(),
+          phone: document.getElementById("customer-phone").value.trim(),
+          device: document.getElementById("device").value.trim(),
+          symptoms: document.getElementById("symptoms").value.trim(),
+          tasks: tasks.map(taskDescription),
+          programs: programs.map(({ name }) => name),
+        };
+        const formData = new FormData();
+        formData.append("request", JSON.stringify(requestBody));
+        files.forEach((file) => formData.append("photos", file, file.name));
+        message.textContent = "กำลังส่งคำขอและรูปภาพ...";
+        submitButton.disabled = true;
+
+        let savedRequest;
+        try {
+          const response = await fetch(`${config.url.replace(/\/$/, "")}/functions/v1/submit-queue`, {
+            method: "POST",
+            headers: { apikey: config.anonKey },
+            body: formData,
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "ส่งคำขอไม่สำเร็จ");
+          savedRequest = result;
+        } catch (error) {
+          message.textContent = error instanceof Error ? error.message : "เชื่อมต่อระบบคิวไม่สำเร็จ กรุณาลองอีกครั้ง";
+          submitButton.disabled = false;
+          return;
+        }
+
         const rows = document.getElementById("receipt-items");
         rows.replaceChildren();
 
@@ -2576,16 +2843,303 @@
           });
         }
 
-        document.getElementById("receipt-number").textContent = ticket;
-        document.getElementById("receipt-date").textContent = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(now);
-        document.getElementById("receipt-customer").textContent = `${document.getElementById("customer-name").value.trim()}${document.getElementById("customer-phone").value.trim() ? ` · ${document.getElementById("customer-phone").value.trim()}` : ""}`;
+        document.getElementById("receipt-number").textContent = savedRequest.ticket_code;
+        document.getElementById("receipt-date").textContent = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(savedRequest.created_at));
+        document.getElementById("receipt-customer").textContent = `${requestBody.customerName} · ${requestBody.phone}`;
         document.getElementById("receipt-device").textContent = document.getElementById("device").value.trim() || "ไม่ได้ระบุ";
+        document.getElementById("receipt-status").textContent = "WAIT · รอรับคิว";
         document.getElementById("receipt-symptoms").textContent = document.getElementById("symptoms").value.trim();
-        document.getElementById("receipt-photos").textContent = files.length ? `แนบ ${files.length} ภาพ (ต้องส่งภาพให้ร้านแยก)` : "ไม่ได้แนบภาพ";
-        document.getElementById("receipt-total").textContent = formatBaht(total);
+        document.getElementById("receipt-photos").textContent = savedRequest.photo_count ? `บันทึกแล้ว ${savedRequest.photo_count} ภาพ` : "ไม่ได้แนบภาพ";
+        document.getElementById("receipt-total").textContent = formatBaht(savedRequest.estimated_total);
         receipt.hidden = false;
+        message.textContent = `เปิดคิวสำเร็จ รหัสคิว ${savedRequest.ticket_code} · สถานะ WAIT (รอรับคิว) กรุณาเก็บรหัสนี้ไว้ค้นหาสถานะ`;
+        document.getElementById("lookup-phone").value = requestBody.phone;
+        document.getElementById("lookup-ticket").value = savedRequest.ticket_code;
+        submitButton.disabled = false;
         receipt.scrollIntoView({ behavior: "smooth", block: "start" });
       });
+
+      const statusLabels = {
+        WAIT: "รอรับคิว",
+        PROCESS: "กำลังดำเนินการ",
+        FINISH: "เสร็จสิ้น",
+        CANCEL: "ยกเลิกคิว",
+      };
+
+      document.getElementById("queue-lookup-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const resultElement = document.getElementById("queue-result");
+        const config = window.SUPABASE_CONFIG;
+        if (!config?.url || !config?.anonKey || config.url.includes("YOUR_PROJECT_REF") || config.anonKey.includes("YOUR_SUPABASE")) {
+          resultElement.textContent = "ระบบคิวยังไม่ได้เชื่อม Supabase";
+          return;
+        }
+
+        resultElement.textContent = "กำลังค้นหาคิว...";
+        try {
+          const response = await fetch(`${config.url.replace(/\/$/, "")}/functions/v1/lookup-queue`, {
+            method: "POST",
+            headers: { apikey: config.anonKey, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              phone: document.getElementById("lookup-phone").value.trim(),
+              ticketCode: document.getElementById("lookup-ticket").value.trim(),
+            }),
+          });
+          const queue = await response.json();
+          if (!response.ok) throw new Error(queue.error || "ไม่พบคิว");
+          const updatedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(queue.updated_at));
+          resultElement.replaceChildren();
+          const status = document.createElement("strong");
+          status.textContent = `${queue.status} · ${statusLabels[queue.status] || queue.status}`;
+          const details = document.createElement("span");
+          details.textContent = `คิว ${queue.ticket_code} · ยอดประเมิน ${formatBaht(queue.estimated_total)} · อัปเดต ${updatedAt}`;
+          resultElement.append(status, document.createElement("br"), details);
+        } catch (error) {
+          resultElement.textContent = error instanceof Error ? error.message : "ค้นหาคิวไม่สำเร็จ";
+        }
+      });
+
+      const config = window.SUPABASE_CONFIG;
+      const hasSupabaseConfig = config?.url && config?.anonKey
+        && !config.url.includes("YOUR_PROJECT_REF")
+        && !config.anonKey.includes("YOUR_SUPABASE");
+      const adminClient = hasSupabaseConfig && window.supabase
+        ? window.supabase.createClient(config.url, config.anonKey)
+        : null;
+      const loginPanel = document.getElementById("staff-login-panel");
+      const mfaPanel = document.getElementById("staff-mfa-panel");
+      const mfaEnrollPanel = document.getElementById("staff-mfa-enroll");
+      const mfaMessage = document.getElementById("staff-mfa-message");
+      const dashboard = document.getElementById("staff-dashboard");
+      const loginMessage = document.getElementById("staff-login-message");
+      const staffMessage = document.getElementById("staff-message");
+      let pendingMfaFactorId = "";
+
+      const renderStaffQueue = async () => {
+        const list = document.getElementById("staff-list");
+        list.replaceChildren();
+        staffMessage.textContent = "กำลังโหลดคิว...";
+        const { data: requests, error } = await adminClient
+          .from("queue_requests")
+          .select("id, ticket_code, customer_name, phone, device, symptoms, tasks, programs, photo_paths, estimated_total, status, created_at, updated_at")
+          .order("created_at", { ascending: true });
+        if (error) {
+          staffMessage.textContent = "โหลดคิวไม่สำเร็จ ตรวจสอบสิทธิ์บัญชีช่าง";
+          return;
+        }
+
+        if (!requests.length) {
+          staffMessage.textContent = "ยังไม่มีคิวงาน";
+          return;
+        }
+
+        staffMessage.textContent = "";
+        for (const request of requests) {
+          const item = document.createElement("article");
+          item.className = "staff-queue-item";
+          const details = document.createElement("div");
+          const title = document.createElement("h4");
+          title.textContent = `${request.ticket_code} · ${request.customer_name} · ${request.phone}`;
+          const content = document.createElement("p");
+          content.textContent = `${request.device || "ไม่ระบุอุปกรณ์"} · ${request.status} · ${formatBaht(request.estimated_total)} · ${request.symptoms}`;
+          const services = document.createElement("p");
+          services.textContent = `งาน: ${(request.tasks || []).join(", ") || "ไม่มี"} · โปรแกรม: ${(request.programs || []).join(", ") || "ไม่มี"}`;
+          const photos = document.createElement("div");
+          photos.className = "staff-photos";
+          for (const path of request.photo_paths || []) {
+            const { data: signedPhoto } = await adminClient.storage.from("queue-photos").createSignedUrl(path, 300);
+            if (!signedPhoto?.signedUrl) continue;
+            const link = document.createElement("a");
+            link.href = signedPhoto.signedUrl;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "เปิดภาพ";
+            photos.append(link);
+          }
+          details.append(title, content, services, photos);
+
+          const controls = document.createElement("div");
+          controls.className = "staff-queue-controls";
+          const select = document.createElement("select");
+          select.setAttribute("aria-label", `สถานะคิว ${request.ticket_code}`);
+          Object.entries(statusLabels).forEach(([value, label]) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = `${value} · ${label}`;
+            select.append(option);
+          });
+          select.value = request.status;
+          const saveButton = document.createElement("button");
+          saveButton.className = "btn btn-primary";
+          saveButton.type = "button";
+          saveButton.textContent = "บันทึกสถานะ";
+          saveButton.addEventListener("click", async () => {
+            saveButton.disabled = true;
+            const { error: updateError } = await adminClient
+              .from("queue_requests")
+              .update({ status: select.value })
+              .eq("id", request.id);
+            saveButton.disabled = false;
+            staffMessage.textContent = updateError ? "บันทึกสถานะไม่สำเร็จ" : `อัปเดต ${request.ticket_code} เป็น ${select.value} แล้ว`;
+            if (!updateError) await renderStaffQueue();
+          });
+          controls.append(select, saveButton);
+          item.append(details, controls);
+          list.append(item);
+        }
+      };
+
+      const activateStaffSession = async (session) => {
+        const { data: assurance, error: assuranceError } = await adminClient.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assuranceError || assurance?.currentLevel !== "aal2") {
+          await beginStaffMfa(session);
+          return;
+        }
+
+        const { data: isAdmin, error } = await adminClient.rpc("is_queue_admin");
+        if (error || !isAdmin) {
+          await adminClient.auth.signOut();
+          loginPanel.hidden = false;
+          mfaPanel.hidden = true;
+          dashboard.hidden = true;
+          loginMessage.textContent = "บัญชีนี้ไม่ได้รับอนุญาตให้จัดการคิว";
+          return;
+        }
+        loginPanel.hidden = true;
+        mfaPanel.hidden = true;
+        dashboard.hidden = false;
+        document.getElementById("staff-account").textContent = session.user.email;
+        await renderStaffQueue();
+      };
+
+      const beginStaffMfa = async (session) => {
+        loginPanel.hidden = true;
+        dashboard.hidden = true;
+        mfaPanel.hidden = false;
+        mfaMessage.textContent = "";
+        document.getElementById("staff-mfa-code").value = "";
+
+        const { data: factorData, error: factorError } = await adminClient.auth.mfa.listFactors();
+        if (factorError) {
+          mfaMessage.textContent = "ตรวจสอบ Authenticator ไม่สำเร็จ";
+          return;
+        }
+
+        const verifiedFactor = factorData.totp?.find((factor) => factor.status === "verified");
+        if (verifiedFactor) {
+          pendingMfaFactorId = verifiedFactor.id;
+          mfaEnrollPanel.hidden = true;
+          document.getElementById("staff-mfa-title").textContent = "ยืนยันรหัส Authenticator";
+          document.getElementById("staff-mfa-submit").textContent = "ยืนยันและเปิดคิว";
+          mfaMessage.textContent = `กรอกรหัส 6 หลักจากแอปเพื่อเข้าใช้งานในบัญชี ${session.user.email}`;
+          return;
+        }
+
+        const unverifiedFactors = (factorData.all || []).filter(
+          (factor) => factor.factor_type === "totp" && factor.status === "unverified",
+        );
+        for (const factor of unverifiedFactors) {
+          const { error: cleanupError } = await adminClient.auth.mfa.unenroll({ factorId: factor.id });
+          if (cleanupError) {
+            mfaMessage.textContent = "ล้างการตั้งค่า Authenticator ที่ค้างไม่สำเร็จ กรุณายกเลิกและลองเข้าสู่ระบบใหม่";
+            return;
+          }
+        }
+
+        const { data: enrollment, error: enrollmentError } = await adminClient.auth.mfa.enroll({
+          factorType: "totp",
+          friendlyName: "Queue technician authenticator",
+        });
+        if (enrollmentError || !enrollment) {
+          mfaMessage.textContent = "เริ่มตั้งค่า Authenticator ไม่สำเร็จ กรุณาลองใหม่";
+          return;
+        }
+
+        pendingMfaFactorId = enrollment.id;
+        mfaEnrollPanel.hidden = false;
+        document.getElementById("staff-mfa-title").textContent = "ตั้งค่า Authenticator สำหรับช่าง";
+        document.getElementById("staff-mfa-qr").src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.totp.qr_code)}`;
+        document.getElementById("staff-mfa-secret").textContent = enrollment.totp.secret;
+        document.getElementById("staff-mfa-submit").textContent = "ยืนยันและเปิดคิว";
+        mfaMessage.textContent = "สแกน QR ในแอป Authenticator แล้วกรอกรหัส 6 หลักเพื่อยืนยันการตั้งค่า";
+      };
+
+      document.getElementById("staff-mfa-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!adminClient || !pendingMfaFactorId) return;
+
+        const submitButton = document.getElementById("staff-mfa-submit");
+        const code = document.getElementById("staff-mfa-code").value.trim();
+        submitButton.disabled = true;
+        mfaMessage.textContent = "กำลังตรวจสอบรหัส...";
+        const { error } = await adminClient.auth.mfa.challengeAndVerify({
+          factorId: pendingMfaFactorId,
+          code,
+        });
+        submitButton.disabled = false;
+
+        if (error) {
+          mfaMessage.textContent = "รหัสไม่ถูกต้องหรือหมดอายุ กรุณาลองรหัสล่าสุดจากแอป";
+          return;
+        }
+
+        const { data } = await adminClient.auth.getSession();
+        if (!data.session) {
+          await adminClient.auth.signOut();
+          mfaPanel.hidden = true;
+          loginPanel.hidden = false;
+          loginMessage.textContent = "ยืนยันสำเร็จ กรุณาเข้าสู่ระบบใหม่อีกครั้ง";
+          return;
+        }
+
+        mfaEnrollPanel.hidden = true;
+        await activateStaffSession(data.session);
+      });
+
+      document.getElementById("staff-mfa-cancel").addEventListener("click", async () => {
+        if (adminClient) await adminClient.auth.signOut();
+        pendingMfaFactorId = "";
+        mfaPanel.hidden = true;
+        mfaEnrollPanel.hidden = true;
+        loginPanel.hidden = false;
+        loginMessage.textContent = "ออกจากระบบแล้ว";
+      });
+
+      document.getElementById("staff-login-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!adminClient) {
+          loginMessage.textContent = "ระบบช่างยังไม่ได้เชื่อม Supabase";
+          return;
+        }
+        loginMessage.textContent = "กำลังเข้าสู่ระบบ...";
+        const { data, error } = await adminClient.auth.signInWithPassword({
+          email: document.getElementById("staff-email").value.trim(),
+          password: document.getElementById("staff-password").value,
+        });
+        if (error || !data.session) {
+          loginMessage.textContent = "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจอีเมลและรหัสผ่าน";
+          return;
+        }
+        loginMessage.textContent = "";
+        await beginStaffMfa(data.session);
+      });
+
+      document.getElementById("staff-logout").addEventListener("click", async () => {
+        if (adminClient) await adminClient.auth.signOut();
+        pendingMfaFactorId = "";
+        mfaPanel.hidden = true;
+        dashboard.hidden = true;
+        loginPanel.hidden = false;
+        loginMessage.textContent = "ออกจากระบบแล้ว";
+      });
+
+      if (adminClient) {
+        adminClient.auth.getSession().then(({ data }) => {
+          if (data.session && location.hash === "#staff") activateStaffSession(data.session);
+        });
+      } else {
+        loginMessage.textContent = "ระบบช่างยังไม่ได้เชื่อม Supabase";
+      }
 
       document.getElementById("print-receipt").addEventListener("click", () => window.print());
       updateEstimate();

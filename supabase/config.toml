@@ -1,0 +1,5 @@
+[functions.submit-queue]
+verify_jwt = false
+
+[functions.lookup-queue]
+verify_jwt = false
