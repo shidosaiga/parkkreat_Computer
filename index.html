@@ -1577,7 +1577,7 @@
             </div>
 
             <div class="field field-full">
-              <label>ติดตั้งโปรแกรม (โปรแกรมละ 100 บาท)</label>
+              <label>ติดตั้งโปรแกรม (โปรแกรมแรก 200 บาท โปรแกรมถัดไปเพิ่มโปรแกรมละ 100 บาท)</label>
               <div class="program-list" id="program-list"></div>
               <button class="btn btn-secondary program-add" id="add-program" type="button">+ เพิ่มโปรแกรม</button>
               <span class="field-hint">เลือก Microsoft Office, Steam หรือโปรแกรมอื่น ๆ ได้ เพิ่มหลายรายการได้</span>
@@ -2101,7 +2101,8 @@
         const tasks = selectedTasks();
         const programs = selectedPrograms();
         const baseTotal = tasks.length ? tasks.length * 200 : 0;
-        const total = baseTotal + programs.length * 100 || 200;
+        const programTotal = programs.length ? 200 + (programs.length - 1) * 100 : 0;
+        const total = baseTotal + programTotal || 200;
         const taskList = document.getElementById("estimate-tasks");
         taskList.replaceChildren();
 
@@ -2123,13 +2124,13 @@
           taskList.append(row);
         });
 
-        programs.forEach(({ name }) => {
+        programs.forEach(({ name }, index) => {
           const row = document.createElement("div");
           row.className = "estimate-line";
           const label = document.createElement("span");
           label.textContent = `ติดตั้ง ${name}`;
           const price = document.createElement("strong");
-          price.textContent = formatBaht(100);
+          price.textContent = formatBaht(index === 0 ? 200 : 100);
           row.append(label, price);
           taskList.append(row);
         });
@@ -2218,7 +2219,8 @@
         const tasks = selectedTasks();
         const programs = selectedPrograms();
         const baseTotal = tasks.length ? tasks.length * 200 : 0;
-        const total = baseTotal + programs.length * 100 || 200;
+        const programTotal = programs.length ? 200 + (programs.length - 1) * 100 : 0;
+        const total = baseTotal + programTotal || 200;
         const ticket = `PK-${new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14)}`;
         const now = new Date();
         const rows = document.getElementById("receipt-items");
@@ -2239,7 +2241,9 @@
           addReceiptRow("ค่าบริการเริ่มต้น", 200);
         } else {
           tasks.forEach((task) => addReceiptRow(taskDescription(task), 200));
-          programs.forEach(({ name }) => addReceiptRow(`ติดตั้ง ${name}`, 100));
+          programs.forEach(({ name }, index) => {
+            addReceiptRow(`ติดตั้ง ${name}`, index === 0 ? 200 : 100);
+          });
         }
 
         document.getElementById("receipt-number").textContent = `เลขอ้างอิงประเมิน: ${ticket}`;
