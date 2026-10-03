@@ -2919,15 +2919,17 @@
       });
 
       const config = window.SUPABASE_CONFIG;
+      const initialAuthHash = new URLSearchParams(location.hash.slice(1));
+      const initialAuthQuery = new URLSearchParams(location.search);
+      const incomingAuthType = initialAuthHash.get("type") || initialAuthQuery.get("type");
+      const incomingAuthFlow = initialAuthQuery.get("flow");
+      const incomingAuthCode = initialAuthQuery.has("code");
       const hasSupabaseConfig = config?.url && config?.anonKey
         && !config.url.includes("YOUR_PROJECT_REF")
         && !config.anonKey.includes("YOUR_SUPABASE");
       const adminClient = hasSupabaseConfig && window.supabase
         ? window.supabase.createClient(config.url, config.anonKey)
         : null;
-      const incomingAuthType = new URLSearchParams(location.hash.slice(1)).get("type")
-        || new URLSearchParams(location.search).get("type");
-      const incomingAuthFlow = new URLSearchParams(location.search).get("flow");
       const loginPanel = document.getElementById("staff-login-panel");
       const passwordPanel = document.getElementById("staff-password-panel");
       const mfaPanel = document.getElementById("staff-mfa-panel");
@@ -3232,7 +3234,7 @@
         });
         adminClient.auth.getSession().then(({ data }) => {
           if (!data.session) return;
-          if (incomingAuthType === "invite" || incomingAuthType === "recovery" || incomingAuthFlow === "password") showPasswordSetup();
+          if (incomingAuthType === "invite" || incomingAuthType === "recovery" || incomingAuthFlow === "password" || incomingAuthCode) showPasswordSetup();
           else if (location.hash === "#staff") activateStaffSession(data.session);
         });
       } else {
