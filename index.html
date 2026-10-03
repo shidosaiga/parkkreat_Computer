@@ -3093,7 +3093,10 @@
         pendingMfaFactorId = enrollment.id;
         mfaEnrollPanel.hidden = false;
         document.getElementById("staff-mfa-title").textContent = "ตั้งค่า Authenticator สำหรับช่าง";
-        document.getElementById("staff-mfa-qr").src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(enrollment.totp.qr_code)}`;
+        const qrCode = enrollment.totp.qr_code;
+        document.getElementById("staff-mfa-qr").src = qrCode.startsWith("data:image/")
+          ? qrCode
+          : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qrCode)}`;
         document.getElementById("staff-mfa-secret").textContent = enrollment.totp.secret;
         document.getElementById("staff-mfa-submit").textContent = "ยืนยันและเปิดคิว";
         mfaMessage.textContent = "สแกน QR ในแอป Authenticator แล้วกรอกรหัส 6 หลักเพื่อยืนยันการตั้งค่า";
