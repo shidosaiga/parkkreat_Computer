@@ -1176,9 +1176,24 @@
 
     .staff-queue-controls {
       display: grid;
-      grid-template-columns: 150px auto;
+      grid-template-columns: 150px minmax(130px, auto);
       gap: 8px;
       align-items: start;
+    }
+
+    .staff-queue-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .staff-queue-actions .btn {
+      width: 100%;
+    }
+
+    .staff-realtime-status {
+      margin: 0 0 12px;
+      color: #63d6ff;
+      font-size: 13px;
     }
 
     .staff-photos {
@@ -2212,6 +2227,7 @@
           <p id="staff-account"></p>
           <button class="btn btn-secondary" id="staff-logout" type="button">ออกจากระบบ</button>
         </div>
+        <p class="staff-realtime-status" id="staff-realtime-status" role="status" aria-live="polite">กำลังเชื่อมต่อการอัปเดตคิว...</p>
         <div class="staff-list" id="staff-list"></div>
         <p class="staff-message" id="staff-message" role="status" aria-live="polite"></p>
       </div>
@@ -2940,6 +2956,11 @@
       const passwordMessage = document.getElementById("staff-password-message");
       const staffMessage = document.getElementById("staff-message");
       let pendingMfaFactorId = "";
+      let queueRealtimeChannel = null;
+      let queueRefreshTimer = null;
+      let queueRefreshFallback = null;
+      let queueRenderInProgress = false;
+      let queueRenderPending = false;
 
       const showPasswordSetup = () => {
         loginPanel.hidden = true;
@@ -2950,7 +2971,108 @@
         document.getElementById("staff-new-password").focus();
       };
 
+      const printStaffReceipt = (request) => {
+        const rows = document.getElementById("receipt-items");
+        rows.replaceChildren();
+        const addRow = (labelText, price) => {
+          const row = document.createElement("tr");
+          const label = document.createElement("td");
+          label.textContent = labelText;
+          const amount = document.createElement("td");
+          amount.textContent = formatBaht(price);
+          row.append(label, amount);
+          rows.append(row);
+        };
+
+        const tasks = Array.isArray(request.tasks) ? request.tasks : [];
+        const programs = Array.isArray(request.programs) ? request.programs : [];
+        if (!tasks.length && !programs.length) {
+          addRow("ค่าบริการเริ่มต้น", 200);
+        } else {
+          tasks.forEach((task) => addRow(task, 200));
+          programs.forEach((program, index) => addRow(`ติดตั้ง ${program}`, index === 0 ? 200 : 100));
+        }
+
+        document.getElementById("receipt-number").textContent = request.ticket_code;
+        document.getElementById("receipt-date").textContent = new Intl.DateTimeFormat("th-TH", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(request.created_at));
+        document.getElementById("receipt-customer").textContent = `${request.customer_name} · ${request.phone}`;
+        document.getElementById("receipt-device").textContent = request.device || "ไม่ได้ระบุ";
+        document.getElementById("receipt-status").textContent = `${request.status} · ${statusLabels[request.status] || request.status}`;
+        document.getElementById("receipt-symptoms").textContent = request.symptoms || "ไม่ได้ระบุ";
+        const photoCount = Array.isArray(request.photo_paths) ? request.photo_paths.length : 0;
+        document.getElementById("receipt-photos").textContent = photoCount ? `แนบแล้ว ${photoCount} ภาพ` : "ไม่ได้แนบภาพ";
+        document.getElementById("receipt-total").textContent = formatBaht(request.estimated_total);
+
+        const wasHidden = receipt.hidden;
+        receipt.hidden = false;
+        const restoreReceipt = () => {
+          receipt.hidden = wasHidden;
+          window.removeEventListener("afterprint", restoreReceipt);
+        };
+        window.addEventListener("afterprint", restoreReceipt, { once: true });
+        window.print();
+        window.setTimeout(restoreReceipt, 1000);
+      };
+
+      const stopStaffRealtime = () => {
+        if (queueRealtimeChannel) {
+          adminClient.removeChannel(queueRealtimeChannel);
+          queueRealtimeChannel = null;
+        }
+        if (queueRefreshTimer) {
+          clearTimeout(queueRefreshTimer);
+          queueRefreshTimer = null;
+        }
+        if (queueRefreshFallback) {
+          clearInterval(queueRefreshFallback);
+          queueRefreshFallback = null;
+        }
+        document.getElementById("staff-realtime-status").textContent = "";
+      };
+
+      const scheduleQueueRefresh = () => {
+        if (queueRefreshTimer) clearTimeout(queueRefreshTimer);
+        queueRefreshTimer = setTimeout(() => {
+          queueRefreshTimer = null;
+          void renderStaffQueue();
+        }, 180);
+      };
+
+      const subscribeStaffRealtime = (session) => {
+        stopStaffRealtime();
+        const realtimeStatus = document.getElementById("staff-realtime-status");
+        realtimeStatus.textContent = "กำลังเชื่อมต่อการอัปเดตคิว...";
+        queueRealtimeChannel = adminClient
+          .channel(`staff-queue-${session.user.id}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "queue_requests",
+          }, scheduleQueueRefresh)
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") {
+              realtimeStatus.textContent = "เชื่อมต่อแล้ว · คิวอัปเดตอัตโนมัติ";
+              if (queueRefreshFallback) {
+                clearInterval(queueRefreshFallback);
+                queueRefreshFallback = null;
+              }
+            } else if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(status)) {
+              realtimeStatus.textContent = "เรียลไทม์ขัดข้อง · กำลังตรวจคิวซ้ำเป็นระยะ";
+              if (!queueRefreshFallback) queueRefreshFallback = setInterval(scheduleQueueRefresh, 15000);
+            }
+          });
+      };
+
       const renderStaffQueue = async () => {
+        if (queueRenderInProgress) {
+          queueRenderPending = true;
+          return;
+        }
+        queueRenderInProgress = true;
+        try {
         const list = document.getElementById("staff-list");
         list.replaceChildren();
         staffMessage.textContent = "กำลังโหลดคิว...";
@@ -3018,9 +3140,24 @@
             staffMessage.textContent = updateError ? "บันทึกสถานะไม่สำเร็จ" : `อัปเดต ${request.ticket_code} เป็น ${select.value} แล้ว`;
             if (!updateError) await renderStaffQueue();
           });
-          controls.append(select, saveButton);
+          const actions = document.createElement("div");
+          actions.className = "staff-queue-actions";
+          const printButton = document.createElement("button");
+          printButton.className = "btn btn-secondary";
+          printButton.type = "button";
+          printButton.textContent = "พิมพ์ใบรับงาน";
+          printButton.addEventListener("click", () => printStaffReceipt(request));
+          actions.append(saveButton, printButton);
+          controls.append(select, actions);
           item.append(details, controls);
           list.append(item);
+        }
+        } finally {
+          queueRenderInProgress = false;
+          if (queueRenderPending) {
+            queueRenderPending = false;
+            scheduleQueueRefresh();
+          }
         }
       };
 
@@ -3033,6 +3170,7 @@
 
         const { data: isAdmin, error } = await adminClient.rpc("is_queue_admin");
         if (error || !isAdmin) {
+          stopStaffRealtime();
           await adminClient.auth.signOut();
           loginPanel.hidden = false;
           mfaPanel.hidden = true;
@@ -3044,6 +3182,7 @@
         mfaPanel.hidden = true;
         dashboard.hidden = false;
         document.getElementById("staff-account").textContent = session.user.email;
+        subscribeStaffRealtime(session);
         await renderStaffQueue();
       };
 
@@ -3135,6 +3274,7 @@
       });
 
       document.getElementById("staff-mfa-cancel").addEventListener("click", async () => {
+        stopStaffRealtime();
         if (adminClient) await adminClient.auth.signOut();
         pendingMfaFactorId = "";
         mfaPanel.hidden = true;
@@ -3219,6 +3359,7 @@
       });
 
       document.getElementById("staff-logout").addEventListener("click", async () => {
+        stopStaffRealtime();
         if (adminClient) await adminClient.auth.signOut();
         pendingMfaFactorId = "";
         mfaPanel.hidden = true;
@@ -3234,6 +3375,7 @@
       if (adminClient) {
         adminClient.auth.onAuthStateChange((event, session) => {
           if (event === "PASSWORD_RECOVERY" && session) showPasswordSetup();
+          if (event === "SIGNED_OUT") stopStaffRealtime();
         });
         adminClient.auth.getSession().then(({ data }) => {
           if (!data.session) return;
