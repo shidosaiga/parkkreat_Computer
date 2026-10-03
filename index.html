@@ -3176,7 +3176,7 @@
         const redirectTo = `${location.origin}${location.pathname}?flow=password#staff`;
         const { error } = await adminClient.auth.resetPasswordForEmail(email, { redirectTo });
         const resetErrorHelp = {
-          email_address_not_authorized: "อีเมลนี้ยังไม่ได้รับอนุญาตจาก SMTP เริ่มต้นของ Supabase ต้องตั้ง custom SMTP หรือเพิ่มอีเมลเป็นสมาชิกองค์กร",
+          email_address_not_authorized: "SMTP เริ่มต้นของ Supabase ไม่อนุญาตอีเมลนี้ ต้องตั้ง custom SMTP เพื่อส่งลิงก์",
           over_email_send_rate_limit: "ส่งอีเมลถี่เกินกำหนด กรุณารอสักพักแล้วลองใหม่",
           over_request_rate_limit: "มีคำขอถี่เกินไป กรุณารอสักครู่แล้วลองใหม่",
         };
