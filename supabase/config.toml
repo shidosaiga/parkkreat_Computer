@@ -7,6 +7,9 @@ verify_jwt = false
 [functions.cleanup-cancelled-queue]
 verify_jwt = false
 
+[functions.track-site-visit]
+verify_jwt = false
+
 [auth]
 enable_signup = false
 additional_redirect_urls = ["https://shidosaiga.github.io/parkkreat_Computer/**"]

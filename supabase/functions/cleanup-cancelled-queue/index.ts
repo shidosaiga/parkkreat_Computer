@@ -12,22 +12,16 @@ Deno.serve(async (request) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceRoleKey) return jsonResponse({ error: "Cleanup is not configured" }, 500);
 
-  const retentionMinutes = Number(Deno.env.get("CANCELLED_QUEUE_RETENTION_MINUTES") ?? "1");
-  if (!Number.isInteger(retentionMinutes) || retentionMinutes < 1 || retentionMinutes > 525600) {
-    return jsonResponse({ error: "Invalid retention setting" }, 500);
-  }
-
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
-  const cutoff = new Date(Date.now() - retentionMinutes * 60_000).toISOString();
   const { data: expiredRequests, error: queryError } = await supabase
     .from("queue_requests")
-    .select("id, photo_paths, cancelled_at")
-    .eq("status", "CANCEL")
-    .not("cancelled_at", "is", null)
-    .lte("cancelled_at", cutoff)
-    .order("cancelled_at", { ascending: true })
+    .select("id, photo_paths, delete_after_at")
+    .in("status", ["CANCEL", "FINISH"])
+    .not("delete_after_at", "is", null)
+    .lte("delete_after_at", new Date().toISOString())
+    .order("delete_after_at", { ascending: true })
     .limit(100);
 
   if (queryError) {
@@ -52,8 +46,8 @@ Deno.serve(async (request) => {
       .from("queue_requests")
       .delete()
       .eq("id", queueRequest.id)
-      .eq("status", "CANCEL")
-      .eq("cancelled_at", queueRequest.cancelled_at)
+      .in("status", ["CANCEL", "FINISH"])
+      .eq("delete_after_at", queueRequest.delete_after_at)
       .select("id")
       .maybeSingle();
 
@@ -67,7 +61,6 @@ Deno.serve(async (request) => {
 
   return jsonResponse({
     ok: true,
-    retention_minutes: retentionMinutes,
     processed: expiredRequests?.length ?? 0,
     deleted: deletedRequests,
     failed: failedRequests,

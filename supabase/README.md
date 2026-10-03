@@ -40,8 +40,9 @@ The Edge Functions use the Supabase project URL and service-role secret from the
 - Customer requests are saved as `WAIT`; server-side code calculates the estimate and uploads up to four private images.
 - Customers look up only ticket status, estimate, and timestamps using the phone number and high-entropy ticket code. The lookup does not reveal customer name, symptoms, device, task details, or image paths.
 - The technician dashboard subscribes to Supabase Realtime for new queue requests, status changes, and deletions. If the realtime connection drops, the page refreshes the queue every 15 seconds until it reconnects.
+- Public website visits are recorded as anonymous random browser/session identifiers and event types only. Names, emails, IP addresses, and URLs are not written to the analytics table. The local dashboard can show approximate unique browsers, page views, and engaged sessions after the website tracker is deployed.
 - The technician signs into `index.html#staff` with email/password and TOTP. Database and Storage restrictive policies require the user ID to be in `queue_admins`, a JWT `aal2` claim, and a `totp` method in the JWT `amr` claim before reading private requests, signing image URLs, or updating status to `PROCESS`, `FINISH`, or `CANCEL`.
-- Cancelled requests and their private photos are removed by a scheduled Edge Function. The test retention is currently 1 minute; after testing, set the production retention to 10 days with `npx.cmd supabase secrets set CANCELLED_QUEUE_RETENTION_MINUTES=14400`.
+- Cancelled and finished requests use a configurable `delete_after_at` schedule. The local-only React admin dashboard can set retention in minutes; `0` disables automatic deletion. The scheduled Edge Function removes expired rows and their private photos.
 - The printable estimate is shown only after Supabase confirms the request was saved. Print/PDF is a customer copy, not proof of payment.
 
 ## Operational notes
