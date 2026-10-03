@@ -10,7 +10,7 @@ additional_redirect_urls = ["https://shidosaiga.github.io/parkkreat_Computer/**"
 site_url = "https://shidosaiga.github.io/parkkreat_Computer/"
 
 [auth.email]
-enable_signup = false
+enable_signup = true
 enable_confirmations = true
 max_frequency = "1m0s"
 otp_length = 8
