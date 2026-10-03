@@ -2203,6 +2203,7 @@
           <button class="btn btn-primary" id="staff-mfa-submit" type="submit">ยืนยันรหัส</button>
         </form>
         <p class="staff-message" id="staff-mfa-message" role="status" aria-live="polite"></p>
+        <button class="btn btn-secondary" id="staff-mfa-set-password" type="button">ตั้งรหัสผ่านบัญชีช่าง</button>
         <button class="btn btn-secondary" id="staff-mfa-cancel" type="button">ยกเลิกและออกจากระบบ</button>
       </div>
 
@@ -3166,11 +3167,21 @@
           loginMessage.textContent = "กรอกอีเมลช่างก่อนขอลิงก์ตั้งรหัสผ่าน";
           return;
         }
+        const { data: sessionData } = await adminClient.auth.getSession();
+        if (sessionData.session?.user.email?.toLowerCase() === email.toLowerCase()) {
+          showPasswordSetup();
+          return;
+        }
         loginMessage.textContent = "กำลังส่งลิงก์ตั้งรหัสผ่าน...";
         const redirectTo = `${location.origin}${location.pathname}?flow=password#staff`;
         const { error } = await adminClient.auth.resetPasswordForEmail(email, { redirectTo });
+        const resetErrorHelp = {
+          email_address_not_authorized: "อีเมลนี้ยังไม่ได้รับอนุญาตจาก SMTP เริ่มต้นของ Supabase ต้องตั้ง custom SMTP หรือเพิ่มอีเมลเป็นสมาชิกองค์กร",
+          over_email_send_rate_limit: "ส่งอีเมลถี่เกินกำหนด กรุณารอสักพักแล้วลองใหม่",
+          over_request_rate_limit: "มีคำขอถี่เกินไป กรุณารอสักครู่แล้วลองใหม่",
+        };
         loginMessage.textContent = error
-          ? "ส่งลิงก์ไม่สำเร็จ กรุณาลองใหม่หรือติดต่อผู้ดูแลระบบ"
+          ? resetErrorHelp[error.code] || `ส่งลิงก์ไม่สำเร็จ (${error.code || error.status || "ไม่ทราบรหัส"}: ${error.message || "ไม่ทราบสาเหตุ"})`
           : "หากอีเมลนี้มีบัญชี ระบบจะส่งลิงก์ตั้งรหัสผ่านให้ โปรดตรวจกล่องจดหมายและ Spam";
       });
 
@@ -3209,6 +3220,10 @@
         dashboard.hidden = true;
         loginPanel.hidden = false;
         loginMessage.textContent = "ออกจากระบบแล้ว";
+      });
+
+      document.getElementById("staff-mfa-set-password").addEventListener("click", () => {
+        showPasswordSetup();
       });
 
       if (adminClient) {
