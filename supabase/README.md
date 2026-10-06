@@ -40,6 +40,7 @@ The account-management Edge Function checks the caller's email-confirmed Auth se
 - Public website visits are recorded as anonymous random browser/session identifiers and event types only. Names, emails, IP addresses, and URLs are not written to the analytics table. The local dashboard can show approximate unique browsers, page views, and engaged sessions after the website tracker is deployed.
 - The technician signs into `index.html#staff` with email/password and TOTP. Database and Storage restrictive policies require the user ID to be in `queue_admins`, a JWT `aal2` claim, and a `totp` method in the JWT `amr` claim before reading private requests, signing image URLs, or updating status to `PROCESS`, `FINISH`, or `CANCEL`.
 - Cancelled and finished requests use a configurable `delete_after_at` schedule. The local-only React admin dashboard can set retention in minutes; `0` disables automatic deletion. The scheduled Edge Function removes expired rows and their private photos.
+- Retention values support up to 30 years (a year is treated as 365 days). The local dashboard converts the selected unit to minutes before saving.
 - The printable estimate is shown only after Supabase confirms the request was saved. Print/PDF is a customer copy, not proof of payment.
 
 ## Operational notes
