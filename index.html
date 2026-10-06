@@ -1107,6 +1107,7 @@
     }
 
     .queue-tool input,
+    .queue-tool select,
     .staff-panel input,
     .staff-panel select {
       width: 100%;
@@ -2121,14 +2122,16 @@
           <h3>ตรวจสอบสถานะคิว</h3>
           <form class="queue-lookup-form" id="queue-lookup-form">
             <label class="field">
-              <span>เบอร์โทรศัพท์ที่ใช้เปิดคิว</span>
+              <span>เบอร์โทรศัพท์ที่ใช้เปิดคิว · กรอกแล้วระบบค้นหารหัสคิวให้อัตโนมัติ</span>
               <input id="lookup-phone" type="tel" inputmode="tel" autocomplete="tel" required>
             </label>
-            <label class="field">
-              <span>รหัสคิว</span>
-              <input id="lookup-ticket" placeholder="เช่น PK-20261002-..." required>
+            <label class="field" id="lookup-ticket-field" hidden>
+              <span>เลือกรหัสคิวของเบอร์นี้</span>
+              <select id="lookup-ticket" disabled required>
+                <option value="">กรอกเบอร์โทรเพื่อค้นหาคิว</option>
+              </select>
             </label>
-            <button class="btn btn-secondary" type="submit">ค้นหาคิว</button>
+            <button class="btn btn-secondary" id="lookup-submit" type="submit">ค้นหาคิวของฉัน</button>
           </form>
           <p class="queue-result" id="queue-result" role="status" aria-live="polite"></p>
         </section>
@@ -2921,8 +2924,9 @@
         document.getElementById("receipt-total").textContent = formatBaht(savedRequest.estimated_total);
         receipt.hidden = false;
         message.textContent = `เปิดคิวสำเร็จ รหัสคิว ${savedRequest.ticket_code} · สถานะ WAIT (รอรับคิว) กรุณาเก็บรหัสนี้ไว้ค้นหาสถานะ`;
-        document.getElementById("lookup-phone").value = requestBody.phone;
-        document.getElementById("lookup-ticket").value = savedRequest.ticket_code;
+        const lookupPhone = document.getElementById("lookup-phone");
+        lookupPhone.value = requestBody.phone;
+        lookupPhone.dispatchEvent(new Event("input", { bubbles: true }));
         submitButton.disabled = false;
         receipt.scrollIntoView({ behavior: "smooth", block: "start" });
       });
@@ -2934,72 +2938,121 @@
         CANCEL: "ยกเลิกคิว",
       };
 
+      const lookupPhoneInput = document.getElementById("lookup-phone");
+      const lookupTicketField = document.getElementById("lookup-ticket-field");
+      const lookupTicketSelect = document.getElementById("lookup-ticket");
+      const lookupResult = document.getElementById("queue-result");
       let queueLookupSequence = 0;
-      document.getElementById("queue-lookup-form").addEventListener("submit", async (event) => {
-        event.preventDefault();
+      let phoneLookupTimer = null;
+      let lookupQueues = [];
+
+      const showQueueStatus = async (queue) => {
         const lookupSequence = ++queueLookupSequence;
-        const resultElement = document.getElementById("queue-result");
         const config = window.SUPABASE_CONFIG;
+        lookupResult.replaceChildren();
+        const updatedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(queue.updated_at));
+        const status = document.createElement("strong");
+        status.textContent = `${queue.status} · ${statusLabels[queue.status] || queue.status}`;
+        const details = document.createElement("span");
+        details.textContent = `คิว ${queue.ticket_code} · ยอดประเมิน ${formatBaht(queue.estimated_total)} · อัปเดต ${updatedAt}`;
+        lookupResult.append(status, document.createElement("br"), details);
+        if (queue.status !== "FINISH") return;
+
+        const payment = document.createElement("div");
+        payment.className = "queue-payment-card";
+        const information = document.createElement("div");
+        const heading = document.createElement("h4");
+        heading.textContent = "ชำระค่าบริการผ่าน PromptPay";
+        const instruction = document.createElement("p");
+        instruction.textContent = "ตรวจสอบชื่อผู้รับและยอดเงินในแอปธนาคารก่อนยืนยัน";
+        const amount = document.createElement("strong");
+        amount.className = "queue-payment-amount";
+        amount.textContent = formatBaht(queue.estimated_total);
+        const note = document.createElement("p");
+        note.className = "queue-payment-note";
+        note.textContent = "การแสดง QR ยังไม่ยืนยันการชำระ กรุณาเก็บสลิปและรอร้านตรวจสอบยอดเงินเข้า";
+        information.append(heading, instruction, amount, note);
+        const qr = document.createElement("img");
+        qr.className = "queue-payment-qr";
+        qr.alt = "QR PromptPay สำหรับชำระยอดคิวนี้";
+        payment.append(information, qr);
+        lookupResult.append(document.createElement("br"), payment);
+        try {
+          if (typeof window.createPromptPayQrDataUrl !== "function") throw new Error("โหลดตัวสร้าง QR ไม่สำเร็จ");
+          qr.src = await window.createPromptPayQrDataUrl(config.promptpayId, queue.estimated_total);
+          if (lookupSequence !== queueLookupSequence) qr.remove();
+        } catch (qrError) {
+          if (lookupSequence !== queueLookupSequence) return;
+          qr.remove();
+          const qrErrorMessage = document.createElement("p");
+          qrErrorMessage.className = "queue-payment-note";
+          qrErrorMessage.textContent = qrError instanceof Error ? qrError.message : "สร้าง QR ไม่สำเร็จ กรุณาติดต่อร้าน";
+          information.append(qrErrorMessage);
+        }
+      };
+
+      const findQueuesByPhone = async () => {
+        const lookupSequence = ++queueLookupSequence;
+        const config = window.SUPABASE_CONFIG;
+        const phone = lookupPhoneInput.value.trim();
+        if (phone.replace(/\D/g, "").length < 9) return;
         if (!config?.url || !config?.anonKey || config.url.includes("YOUR_PROJECT_REF") || config.anonKey.includes("YOUR_SUPABASE")) {
-          resultElement.textContent = "ระบบคิวยังไม่ได้เชื่อม Supabase";
+          lookupResult.textContent = "ระบบคิวยังไม่ได้เชื่อม Supabase";
           return;
         }
 
-        resultElement.textContent = "กำลังค้นหาคิว...";
+        lookupResult.textContent = "กำลังค้นหาคิวจากเบอร์นี้...";
+        lookupTicketField.hidden = true;
+        lookupTicketSelect.disabled = true;
         try {
           const response = await fetch(`${config.url.replace(/\/$/, "")}/functions/v1/lookup-queue`, {
             method: "POST",
             headers: { apikey: config.anonKey, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              phone: document.getElementById("lookup-phone").value.trim(),
-              ticketCode: document.getElementById("lookup-ticket").value.trim(),
-            }),
+            body: JSON.stringify({ phone }),
           });
-          const queue = await response.json();
-          if (!response.ok) throw new Error(queue.error || "ไม่พบคิว");
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "ค้นหาคิวไม่สำเร็จ");
           if (lookupSequence !== queueLookupSequence) return;
-          const updatedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(queue.updated_at));
-          resultElement.replaceChildren();
-          const status = document.createElement("strong");
-          status.textContent = `${queue.status} · ${statusLabels[queue.status] || queue.status}`;
-          const details = document.createElement("span");
-          details.textContent = `คิว ${queue.ticket_code} · ยอดประเมิน ${formatBaht(queue.estimated_total)} · อัปเดต ${updatedAt}`;
-          resultElement.append(status, document.createElement("br"), details);
-          if (queue.status === "FINISH") {
-            const payment = document.createElement("div");
-            payment.className = "queue-payment-card";
-            const information = document.createElement("div");
-            const heading = document.createElement("h4");
-            heading.textContent = "ชำระค่าบริการผ่าน PromptPay";
-            const instruction = document.createElement("p");
-            instruction.textContent = "ตรวจสอบชื่อผู้รับและยอดเงินในแอปธนาคารก่อนยืนยัน";
-            const amount = document.createElement("strong");
-            amount.className = "queue-payment-amount";
-            amount.textContent = formatBaht(queue.estimated_total);
-            const note = document.createElement("p");
-            note.className = "queue-payment-note";
-            note.textContent = "การแสดง QR ยังไม่ยืนยันการชำระ กรุณาเก็บสลิปและรอร้านตรวจสอบยอดเงินเข้า";
-            information.append(heading, instruction, amount, note);
-            const qr = document.createElement("img");
-            qr.className = "queue-payment-qr";
-            qr.alt = "QR PromptPay สำหรับชำระยอดคิวนี้";
-            qr.setAttribute("aria-label", `QR PromptPay ยอด ${formatBaht(queue.estimated_total)}`);
-            payment.append(information, qr);
-            resultElement.append(document.createElement("br"), payment);
-            try {
-              if (typeof window.createPromptPayQrDataUrl !== "function") throw new Error("โหลดตัวสร้าง QR ไม่สำเร็จ");
-              qr.src = await window.createPromptPayQrDataUrl(config.promptpayId, queue.estimated_total);
-            } catch (qrError) {
-              qr.remove();
-              const qrErrorMessage = document.createElement("p");
-              qrErrorMessage.className = "queue-payment-note";
-              qrErrorMessage.textContent = qrError instanceof Error ? qrError.message : "สร้าง QR ไม่สำเร็จ กรุณาติดต่อร้าน";
-              information.append(qrErrorMessage);
-            }
+          lookupQueues = Array.isArray(result.queues) ? result.queues : [];
+          if (!lookupQueues.length) {
+            lookupTicketSelect.replaceChildren(new Option("ไม่พบคิวของเบอร์นี้", ""));
+            lookupResult.textContent = "ไม่พบคิวที่ผูกกับเบอร์นี้ กรุณาตรวจสอบเบอร์โทรอีกครั้ง";
+            return;
           }
+
+          lookupTicketSelect.replaceChildren(...lookupQueues.map((queue) => {
+            const option = new Option(`${queue.ticket_code} · ${statusLabels[queue.status] || queue.status} · ${new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(queue.created_at))}`, queue.ticket_code);
+            return option;
+          }));
+          lookupTicketField.hidden = false;
+          lookupTicketSelect.disabled = false;
+          lookupTicketSelect.value = lookupQueues[0].ticket_code;
+          await showQueueStatus(lookupQueues[0]);
         } catch (error) {
-          if (lookupSequence === queueLookupSequence) resultElement.textContent = error instanceof Error ? error.message : "ค้นหาคิวไม่สำเร็จ";
+          if (lookupSequence === queueLookupSequence) lookupResult.textContent = error instanceof Error ? error.message : "ค้นหาคิวไม่สำเร็จ";
         }
+      };
+
+      lookupPhoneInput.addEventListener("input", () => {
+        queueLookupSequence += 1;
+        clearTimeout(phoneLookupTimer);
+        lookupQueues = [];
+        lookupTicketField.hidden = true;
+        lookupTicketSelect.disabled = true;
+        lookupTicketSelect.replaceChildren(new Option("กำลังรอเบอร์โทร...", ""));
+        lookupResult.textContent = "";
+        if (lookupPhoneInput.value.replace(/\D/g, "").length >= 9) phoneLookupTimer = setTimeout(() => void findQueuesByPhone(), 500);
+      });
+
+      lookupTicketSelect.addEventListener("change", () => {
+        const queue = lookupQueues.find((item) => item.ticket_code === lookupTicketSelect.value);
+        if (queue) void showQueueStatus(queue);
+      });
+
+      document.getElementById("queue-lookup-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearTimeout(phoneLookupTimer);
+        void findQueuesByPhone();
       });
 
       const config = window.SUPABASE_CONFIG;
