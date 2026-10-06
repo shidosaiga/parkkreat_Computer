@@ -10,8 +10,11 @@ verify_jwt = false
 [functions.track-site-visit]
 verify_jwt = false
 
+[functions.manage-queue-staff]
+verify_jwt = true
+
 [auth]
-enable_signup = false
+enable_signup = true
 additional_redirect_urls = ["https://shidosaiga.github.io/parkkreat_Computer/**"]
 site_url = "https://shidosaiga.github.io/parkkreat_Computer/"
 

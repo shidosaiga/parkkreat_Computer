@@ -2215,7 +2215,20 @@
           <button class="btn btn-primary" type="submit">เข้าสู่ระบบ</button>
         </form>
         <button class="btn btn-secondary" id="staff-password-reset" type="button">ตั้งหรือรีเซ็ตรหัสผ่าน</button>
+        <button class="btn btn-secondary" id="staff-signup-toggle" type="button">สมัครบัญชีช่าง · รออนุมัติ</button>
         <p class="staff-message" id="staff-login-message" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="staff-panel" id="staff-signup-panel" hidden>
+        <h3>สมัครบัญชีช่าง</h3>
+        <p class="field-hint">ยืนยันอีเมลก่อน จากนั้นรอเจ้าของร้านอนุมัติ จึงจะเข้าใช้งานคิวได้</p>
+        <form class="staff-login-form" id="staff-signup-form">
+          <label class="field"><span>อีเมลที่ใช้งานได้จริง</span><input id="staff-signup-email" type="email" autocomplete="email" required></label>
+          <label class="field"><span>ตั้งรหัสผ่าน (อย่างน้อย 12 ตัวอักษร)</span><input id="staff-signup-password" type="password" autocomplete="new-password" minlength="12" required></label>
+          <button class="btn btn-primary" id="staff-signup-submit" type="submit">สมัครและส่งอีเมลยืนยัน</button>
+        </form>
+        <button class="btn btn-secondary" id="staff-signup-cancel" type="button">กลับไปเข้าสู่ระบบ</button>
+        <p class="staff-message" id="staff-signup-message" role="status" aria-live="polite"></p>
       </div>
 
       <div class="staff-panel" id="staff-password-panel" hidden>
@@ -3077,6 +3090,7 @@
         });
       }
       const loginPanel = document.getElementById("staff-login-panel");
+      const signupPanel = document.getElementById("staff-signup-panel");
       const passwordPanel = document.getElementById("staff-password-panel");
       const mfaPanel = document.getElementById("staff-mfa-panel");
       const mfaEnrollPanel = document.getElementById("staff-mfa-enroll");
@@ -3292,6 +3306,17 @@
       };
 
       const activateStaffSession = async (session) => {
+        const { data: approved, error: approvalError } = await adminClient.rpc("has_queue_access");
+        if (approvalError || approved !== true) {
+          stopStaffRealtime();
+          await adminClient.auth.signOut();
+          loginPanel.hidden = false;
+          signupPanel.hidden = true;
+          mfaPanel.hidden = true;
+          dashboard.hidden = true;
+          loginMessage.textContent = "อีเมลยืนยันแล้ว บัญชียังรอเจ้าของร้านอนุมัติ จึงยังเข้าใช้งานคิวไม่ได้";
+          return;
+        }
         const { data: assurance, error: assuranceError } = await adminClient.auth.mfa.getAuthenticatorAssuranceLevel();
         if (assuranceError || assurance?.currentLevel !== "aal2") {
           await beginStaffMfa(session);
@@ -3428,8 +3453,46 @@
           loginMessage.textContent = "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจอีเมลและรหัสผ่าน";
           return;
         }
+        const { data: approved, error: approvalError } = await adminClient.rpc("has_queue_access");
+        if (approvalError || approved !== true) {
+          await adminClient.auth.signOut();
+          loginMessage.textContent = "บัญชีนี้ยังรอเจ้าของร้านอนุมัติ จึงยังเข้าใช้งานคิวไม่ได้";
+          return;
+        }
         loginMessage.textContent = "";
         await beginStaffMfa(data.session);
+      });
+
+      document.getElementById("staff-signup-toggle").addEventListener("click", () => {
+        loginPanel.hidden = true;
+        signupPanel.hidden = false;
+        document.getElementById("staff-signup-email").value = document.getElementById("staff-email").value.trim();
+        document.getElementById("staff-signup-message").textContent = "";
+      });
+      document.getElementById("staff-signup-cancel").addEventListener("click", () => {
+        signupPanel.hidden = true;
+        loginPanel.hidden = false;
+      });
+      document.getElementById("staff-signup-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = document.getElementById("staff-signup-message");
+        const button = document.getElementById("staff-signup-submit");
+        if (!adminClient) { message.textContent = "ระบบช่างยังไม่ได้เชื่อมต่อ Supabase"; return; }
+        const email = document.getElementById("staff-signup-email").value.trim();
+        const password = document.getElementById("staff-signup-password").value;
+        button.disabled = true;
+        message.textContent = "กำลังสร้างบัญชีและส่งอีเมลยืนยัน...";
+        const redirectTo = `${location.origin}${location.pathname}#staff`;
+        const { error: signupError } = await adminClient.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: redirectTo, data: { account_type: "technician" } },
+        });
+        button.disabled = false;
+        message.textContent = signupError
+          ? (signupError.message.toLowerCase().includes("signups not allowed") ? "ระบบสมัครบัญชียังไม่เปิดใน Supabase Auth" : "สมัครไม่สำเร็จ กรุณาตรวจอีเมลและลองใหม่ภายหลัง")
+          : "ส่งคำขอสมัครแล้ว กรุณายืนยันอีเมลจากกล่องเมล เมื่อยืนยันแล้วให้รอเจ้าของร้านอนุมัติ";
+        if (!signupError) document.getElementById("staff-signup-form").reset();
       });
 
       document.getElementById("staff-password-reset").addEventListener("click", async () => {
