@@ -2584,7 +2584,7 @@
             </p>
 
 
-            <div class="open">
+            <div class="open" data-business-hours>
               เปิดทุกวัน · 09:00 - 18:30 น.
             </div>
 
@@ -2647,7 +2647,7 @@
         · Computer & IT Services
       </div>
 
-      <div>
+      <div data-business-hours>
         เปิดทุกวัน
         09:00 - 18:30 น.
       </div>
@@ -3067,6 +3067,15 @@
       const adminClient = hasSupabaseConfig && window.supabase
         ? window.supabase.createClient(config.url, config.anonKey)
         : null;
+      if (adminClient) {
+        void adminClient.rpc("get_public_business_hours").then(({ data, error }) => {
+          const hours = Array.isArray(data) ? data[0] : data;
+          if (error || !hours?.open_time || !hours?.close_time) return;
+          document.querySelectorAll("[data-business-hours]").forEach((element) => {
+            element.textContent = `เปิดทุกวัน · ${hours.open_time} - ${hours.close_time} น.`;
+          });
+        });
+      }
       const loginPanel = document.getElementById("staff-login-panel");
       const passwordPanel = document.getElementById("staff-password-panel");
       const mfaPanel = document.getElementById("staff-mfa-panel");
