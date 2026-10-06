@@ -1,8 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const allowedOrigin = Deno.env.get("SITE_ORIGIN") ?? "https://shidosaiga.github.io";
+const siteOrigin = Deno.env.get("SITE_ORIGIN") ?? "https://shidosaiga.github.io";
+const allowedOrigins = new Set([siteOrigin, "http://127.0.0.1:5173", "http://localhost:5173"]);
 const corsHeaders = (origin: string | null) => ({
-  "Access-Control-Allow-Origin": origin === allowedOrigin ? origin : allowedOrigin,
+  "Access-Control-Allow-Origin": origin && allowedOrigins.has(origin) ? origin : siteOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Cache-Control": "no-store",
@@ -17,7 +18,7 @@ Deno.serve(async (request) => {
   const origin = request.headers.get("Origin");
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(origin) });
   if (request.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405, origin);
-  if (origin !== allowedOrigin) return jsonResponse({ error: "Origin not allowed" }, 403, origin);
+  if (!origin || !allowedOrigins.has(origin)) return jsonResponse({ error: "Origin not allowed" }, 403, origin);
 
   const authorization = request.headers.get("Authorization") ?? "";
   const accessToken = authorization.replace(/^Bearer\s+/i, "");

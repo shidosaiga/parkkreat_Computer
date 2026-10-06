@@ -21,7 +21,7 @@ This project is a static GitHub Pages site backed by Supabase. Never put the Sup
 
    In the Supabase Dashboard, open **Authentication → Sign In / Providers → Email** and enable email signups and email confirmation. Keep the custom SMTP settings already in use. `config.toml` enables email signup for local Supabase; change the hosted project's signup switch in the Dashboard so other hosted Auth settings are not overwritten.
 
-   The functions allow the GitHub Pages origin by default. If the site uses a custom domain, set its exact HTTPS origin before deploying:
+   Public-site functions allow the GitHub Pages origin by default. `manage-queue-staff` also allows the local dashboard at `http://127.0.0.1:5173` and `http://localhost:5173`. If the site uses a custom domain, set its exact HTTPS origin before deploying:
 
    ```powershell
    npx.cmd supabase secrets set SITE_ORIGIN=https://your-domain.example
