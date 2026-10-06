@@ -1137,6 +1137,29 @@
       color: #5ee88a;
     }
 
+    .queue-payment-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(94, 232, 138, .25);
+      border-radius: 12px;
+      background: rgba(26, 72, 53, .3);
+    }
+
+    .queue-payment-card h4 { margin: 0 0 7px; color: #8bf0b1; }
+    .queue-payment-card p { margin: 0 0 6px; color: #cbd4df; }
+    .queue-payment-amount { color: #fff; font-size: 20px; font-weight: 800; }
+    .queue-payment-qr { width: 150px; height: 150px; flex: none; padding: 6px; border-radius: 8px; background: #fff; }
+    .queue-payment-note { margin-top: 8px !important; color: #ffc978 !important; font-size: 12px; }
+
+    @media (max-width: 520px) {
+      .queue-payment-card { align-items: flex-start; flex-direction: column; }
+      .queue-payment-qr { align-self: center; }
+    }
+
     .staff-section {
       background: rgba(255, 255, 255, 0.018);
       border-top: 1px solid rgba(255, 255, 255, 0.09);
@@ -2634,6 +2657,7 @@
 
 
   <script src="assets/supabase-config.js"></script>
+  <script src="assets/promptpay-qr.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     (() => {
@@ -2910,8 +2934,10 @@
         CANCEL: "ยกเลิกคิว",
       };
 
+      let queueLookupSequence = 0;
       document.getElementById("queue-lookup-form").addEventListener("submit", async (event) => {
         event.preventDefault();
+        const lookupSequence = ++queueLookupSequence;
         const resultElement = document.getElementById("queue-result");
         const config = window.SUPABASE_CONFIG;
         if (!config?.url || !config?.anonKey || config.url.includes("YOUR_PROJECT_REF") || config.anonKey.includes("YOUR_SUPABASE")) {
@@ -2931,6 +2957,7 @@
           });
           const queue = await response.json();
           if (!response.ok) throw new Error(queue.error || "ไม่พบคิว");
+          if (lookupSequence !== queueLookupSequence) return;
           const updatedAt = new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(queue.updated_at));
           resultElement.replaceChildren();
           const status = document.createElement("strong");
@@ -2938,8 +2965,40 @@
           const details = document.createElement("span");
           details.textContent = `คิว ${queue.ticket_code} · ยอดประเมิน ${formatBaht(queue.estimated_total)} · อัปเดต ${updatedAt}`;
           resultElement.append(status, document.createElement("br"), details);
+          if (queue.status === "FINISH") {
+            const payment = document.createElement("div");
+            payment.className = "queue-payment-card";
+            const information = document.createElement("div");
+            const heading = document.createElement("h4");
+            heading.textContent = "ชำระค่าบริการผ่าน PromptPay";
+            const instruction = document.createElement("p");
+            instruction.textContent = "ตรวจสอบชื่อผู้รับและยอดเงินในแอปธนาคารก่อนยืนยัน";
+            const amount = document.createElement("strong");
+            amount.className = "queue-payment-amount";
+            amount.textContent = formatBaht(queue.estimated_total);
+            const note = document.createElement("p");
+            note.className = "queue-payment-note";
+            note.textContent = "การแสดง QR ยังไม่ยืนยันการชำระ กรุณาเก็บสลิปและรอร้านตรวจสอบยอดเงินเข้า";
+            information.append(heading, instruction, amount, note);
+            const qr = document.createElement("img");
+            qr.className = "queue-payment-qr";
+            qr.alt = "QR PromptPay สำหรับชำระยอดคิวนี้";
+            qr.setAttribute("aria-label", `QR PromptPay ยอด ${formatBaht(queue.estimated_total)}`);
+            payment.append(information, qr);
+            resultElement.append(document.createElement("br"), payment);
+            try {
+              if (typeof window.createPromptPayQrDataUrl !== "function") throw new Error("โหลดตัวสร้าง QR ไม่สำเร็จ");
+              qr.src = await window.createPromptPayQrDataUrl(config.promptpayId, queue.estimated_total);
+            } catch (qrError) {
+              qr.remove();
+              const qrErrorMessage = document.createElement("p");
+              qrErrorMessage.className = "queue-payment-note";
+              qrErrorMessage.textContent = qrError instanceof Error ? qrError.message : "สร้าง QR ไม่สำเร็จ กรุณาติดต่อร้าน";
+              information.append(qrErrorMessage);
+            }
+          }
         } catch (error) {
-          resultElement.textContent = error instanceof Error ? error.message : "ค้นหาคิวไม่สำเร็จ";
+          if (lookupSequence === queueLookupSequence) resultElement.textContent = error instanceof Error ? error.message : "ค้นหาคิวไม่สำเร็จ";
         }
       });
 
